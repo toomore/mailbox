@@ -1,8 +1,14 @@
+// mailbox import user data from csv file
+//
+// Need fields: email, groups, f_name, l_name
+// and default import csv path is `./list.csv`
+//
 package main
 
 import (
 	"database/sql"
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -12,7 +18,11 @@ import (
 	"github.com/toomore/mailbox/utils"
 )
 
-var conn *sql.DB
+var (
+	conn   *sql.DB
+	path   = flag.String("p", "./list.csv", "user's csv")
+	dryRun = flag.Bool("d", false, "Dry run read csv data")
+)
 
 func initDB() {
 	var err error
@@ -20,9 +30,9 @@ func initDB() {
 		log.Fatal(err)
 	}
 	conn.SetMaxOpenConns(1024)
-	fmt.Printf("%+v\n", conn.Stats())
-	fmt.Println(conn.Ping())
-	fmt.Println(conn.Driver())
+	if err := conn.Ping(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 type user struct {
@@ -100,9 +110,17 @@ func readUser() {
 }
 
 func main() {
+	flag.Parse()
 	initDB()
-	//data := readCSV("./list.csv")
-	//log.Printf("%+v", data)
-	//insertInto(data)
-	readUser()
+	log.Printf(">>> Read csv: `%s`", *path)
+	data := readCSV(*path)
+	if *dryRun {
+		log.Println(">>> Dry Run data")
+		for i, v := range data {
+			fmt.Printf("%d %+v\n", i, v)
+		}
+	} else {
+		insertInto(data)
+	}
+	//readUser()
 }
