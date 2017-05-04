@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/toomore/mailbox/utils"
@@ -81,9 +82,27 @@ func insertInto(data []user) {
 	}
 }
 
+func readUser() {
+	rows, err := conn.Query(`select email,groups,created from user;`)
+	defer rows.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	var email string
+	var groups string
+	var created time.Time
+	for rows.Next() {
+		if err := rows.Scan(&email, &groups, &created); err != nil {
+			log.Println(err)
+		}
+		log.Println(email, groups, created)
+	}
+}
+
 func main() {
 	initDB()
-	data := readCSV("./list.csv")
-	log.Printf("%+v", data)
-	insertInto(data)
+	//data := readCSV("./list.csv")
+	//log.Printf("%+v", data)
+	//insertInto(data)
+	readUser()
 }
