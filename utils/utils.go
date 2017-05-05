@@ -3,7 +3,9 @@ package utils
 import (
 	"crypto/hmac"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
+	"log"
 
 	"github.com/google/uuid"
 )
@@ -26,4 +28,19 @@ func GenHmac(key, message []byte) []byte {
 	mac := hmac.New(sha256.New, key)
 	mac.Write(message)
 	return mac.Sum(nil)
+}
+
+// GetConn DB conn
+func GetConn() *sql.DB {
+	var err error
+	var conn *sql.DB
+	if conn, err = sql.Open("mysql", SQLPATH); err != nil {
+		log.Fatal(err)
+	}
+	conn.SetMaxOpenConns(1024)
+	if err := conn.Ping(); err != nil {
+		log.Fatal(err)
+	}
+
+	return conn
 }

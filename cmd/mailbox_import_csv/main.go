@@ -24,17 +24,6 @@ var (
 	dryRun = flag.Bool("d", false, "Dry run read csv data")
 )
 
-func initDB() {
-	var err error
-	if conn, err = sql.Open("mysql", utils.SQLPATH); err != nil {
-		log.Fatal(err)
-	}
-	conn.SetMaxOpenConns(1024)
-	if err := conn.Ping(); err != nil {
-		log.Fatal(err)
-	}
-}
-
 type user struct {
 	email  string
 	groups string
@@ -111,7 +100,6 @@ func readUser() {
 
 func main() {
 	flag.Parse()
-	initDB()
 	log.Printf(">>> Read csv: `%s`", *path)
 	data := readCSV(*path)
 	if *dryRun {
@@ -120,6 +108,7 @@ func main() {
 			fmt.Printf("%d %+v\n", i, v)
 		}
 	} else {
+		conn = utils.GetConn()
 		insertInto(data)
 	}
 	//readUser()
