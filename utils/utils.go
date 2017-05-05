@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/hex"
 
 	"github.com/google/uuid"
@@ -17,4 +19,11 @@ func GenSeed() [8]byte {
 	u := uuid.Must(uuid.NewRandom())
 	hex.Encode(buf[:], u[:4])
 	return buf
+}
+
+// GenHmac is to gen hmac
+func GenHmac(key, message []byte) []byte {
+	mac := hmac.New(sha256.New, key)
+	mac.Write(message)
+	return mac.Sum(nil)
 }
