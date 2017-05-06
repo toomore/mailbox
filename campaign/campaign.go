@@ -2,7 +2,6 @@ package campaign
 
 import (
 	"crypto/hmac"
-	"fmt"
 	"log"
 	"net/url"
 
@@ -12,7 +11,7 @@ import (
 // MakeMac is to hmac data with campaign seed
 func MakeMac(campaignID string, data url.Values) []byte {
 	conn := utils.GetConn()
-	rows, err := conn.Query(fmt.Sprintf(`SELECT seed FROM campaign WHERE id='%s' `, campaignID))
+	rows, err := conn.Query(`SELECT seed FROM campaign WHERE id='?' `, campaignID)
 	defer rows.Close()
 	if err != nil {
 		log.Fatal(err)
