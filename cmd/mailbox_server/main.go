@@ -10,6 +10,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/toomore/mailbox/campaign"
+	"github.com/toomore/mailbox/reader"
 )
 
 var httpPort = flag.String("p", ":8801", "Http port")
@@ -27,8 +28,9 @@ func read(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusNotFound)
 	hmbyte, _ := hex.DecodeString(hm)
-	if campaign.CheckMac(hmbyte, v.Get("cid"), v) {
+	if campaign.CheckMac(hmbyte, v.Get("c"), v) {
 		log.Println("Pass")
+		reader.Save(v.Get("c"), v.Get("u"), r.Header.Get("X-Real-Ip"), r.Header.Get("User-Agent"))
 	} else {
 		log.Println("Hash Fail!!!")
 	}

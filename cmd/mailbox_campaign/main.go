@@ -5,15 +5,21 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"text/tabwriter"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/toomore/mailbox/campaign"
 	"github.com/toomore/mailbox/utils"
 )
 
-var conn *sql.DB
+var (
+	conn *sql.DB
+	cid  = flag.String("cid", "", "campaign id")
+	uid  = flag.String("uid", "", "User id")
+)
 
 func create() ([8]byte, [8]byte) {
 	id, seed := utils.GenSeed(), utils.GenSeed()
@@ -47,6 +53,13 @@ func list() {
 	w.Flush()
 }
 
+func makeHash() {
+	data := url.Values{}
+	data.Add("c", *cid)
+	data.Add("u", *uid)
+	log.Printf("/read/%x?%s\n", campaign.MakeMac(*cid, data), data.Encode())
+}
+
 func main() {
 	flag.Parse()
 	args := flag.Args()
@@ -58,8 +71,10 @@ func main() {
 			log.Printf("id: %s, seed: %s", id, seed)
 		case "list":
 			list()
+		case "hash":
+			makeHash()
 		}
 	} else {
-		fmt.Println("mailbox_campaign [cmd]\ncmd: `create`, `list`")
+		fmt.Println("mailbox_campaign [cmd]\ncmd: `create`, `list`, `hash`")
 	}
 }

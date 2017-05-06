@@ -20,3 +20,16 @@ CREATE TABLE IF NOT EXISTS user (
     INDEX groups (groups ASC)
     ) CHARACTER SET 'utf8'
       COLLATE 'utf8_icelandic_ci';
+
+CREATE TABLE IF NOT EXISTS reader (
+    no INT NOT NULL AUTO_INCREMENT,
+    uid INT NOT NULL,
+    cid CHAR(8) NOT NULL,
+    ip CHAR(15) NOT NULL,
+    agent CHAR(128) NOT NULL,
+    created DATETIME DEFAULT NOW(),
+    PRIMARY KEY (no),
+    INDEX uid (uid ASC),
+    INDEX cid (cid ASC)
+    ) CHARACTER SET 'utf8'
+      COLLATE 'utf8_icelandic_ci';
