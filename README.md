@@ -1,13 +1,15 @@
-Mailbox
-========
-簡易電子報發送系統，使用 Golang 實作
+Mailbox  [![GitHub release](https://img.shields.io/github/release/toomore/mailbox.svg)](https://github.com/toomore/mailbox/releases) [![license](https://img.shields.io/github/license/toomore/mailbox.svg)](https://github.com/toomore/mailbox/blob/master/LICENSE)
+=====================
+簡易電子報發送系統，使用 Golang 實作。建立發送 `campaign` 資訊、匯入訂閱者資訊（群組標記）、簡易發送系統與開信追蹤。
+
+以 docker container 運行。
 
 Cmd
 ----
-1. mailbox_campaign：建立 campaign，包含產生該 campaign 的亂數種子。
-2. mailbox_import_csv：匯入訂閱者的資訊。
-3. mailbox_sender：發送電子報，以 HTML 檔案發送。
-4. mailbox_server：接收開信訊息。
+1. `mailbox_campaign`：建立 `campaign`，包含產生該 `campaign` 的亂數種子。
+2. `mailbox_import_csv`：匯入訂閱者的資訊。
+3. `mailbox_sender`：發送電子報，以 **HTML** 格式發送。
+4. `mailbox_server`：接收開信訊息。
 
 相關的操作請參考 `-h` 的說明，但可能什麼都沒說 XD
 
@@ -27,11 +29,27 @@ Required
 ---------
 1. AWS SES `KEY`, `Token`.
 2. Update `./prod-run-cmd.sh`, `./dev-run-cmd.sh` files.
-  * `mailbox_ses_api`, `mailbox_ses_key`, `mailbox_ses_sender`, `mailbox_web_site`
+    1. `mailbox_ses_api`：AWS SES KEY
+    2. `mailbox_ses_key`：AWS SES Token
+    3. `mailbox_ses_sender`：發送者的 `email`。如：`Toomore Chiang <toomore0929@gmail.com>`.
+    4. `mailbox_web_site`：接收開信網址，不包含 `https` 與結尾。如：`open.example.com`.
 
 Nginx config
 -------------
+需加入以下資訊到網域設定檔。
+
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Args $query_string;
     proxy_set_header X-Uri $uri;
+
+Import User data from csv
+--------------------------
+匯入訂閱者資訊與建立 csv 檔案，檔案內需包含 `email`, `groups`, `f_name`, `l_name` 欄位。
+
+    mailbox_import_csv -p ./list.csv
+
+可以使用 `-d` 來預覽資料讀取狀況
+
+    mailbox_import_csv -p ./list.csv -d
+    ...
