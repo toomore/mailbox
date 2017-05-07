@@ -55,16 +55,20 @@ func main() {
 
 	var count int
 	for rows.Next() {
-		var no string
-		var email string
-		var fname string
-		var lname string
+		var (
+			email string
+			fname string
+			lname string
+			msg   []byte
+			no    string
+		)
 		rows.Scan(&no, &email, &fname, &lname)
 
-		replaceReader(&body, *cid, seed, no)
+		msg = body
+		replaceReader(&msg, *cid, seed, no)
 		params := mails.GenParams(
 			fmt.Sprintf("%s %s <%s>", fname, lname, email),
-			string(body),
+			string(msg),
 			*subject)
 		if !*dryRun {
 			mails.Send(params)
