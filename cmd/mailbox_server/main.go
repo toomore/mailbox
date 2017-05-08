@@ -1,3 +1,14 @@
+// mailbox_server - to receive open click.
+/*
+Usage:
+
+	mailbox_server [flags]
+
+The flags are:
+
+	`-p`: Http port, default is `:8801`
+
+*/
 package main
 
 import (

@@ -1,8 +1,22 @@
-// mailbox import user data from csv file
-//
-// Need fields: email, groups, f_name, l_name
-// and default import csv path is `./list.csv`
-//
+// mailbox_import_csv - import user data from csv file.
+/*
+
+CSV Format:
+
+	email, groups, f_name, l_name
+
+and default import csv path is `./list.csv`
+
+Usage:
+
+	mailbox_import_csv [flags]
+
+The flags are:
+
+	`-p`: csv file path, default is `./list.csv`
+	`-d`: using dry run to review csv data
+
+*/
 package main
 
 import (

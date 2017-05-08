@@ -1,3 +1,22 @@
+// mailbox_sender - sender worker.
+/*
+Usage:
+
+	mailbox_sender [flags]
+
+The flags are:
+
+	`-cid`: Campaign id
+	`-g`: User groups
+	`-p`: HTML file path
+	`-t`: Mail Subject
+	`-d`: Dry run all but not to send mail
+
+Example:
+
+	mailbox_sender -cid cbc6eb46 -g testuser -p ./email_1.html -t "#1 New Paper!" -d
+
+*/
 package main
 
 import (
@@ -18,9 +37,9 @@ import (
 var (
 	cid     = flag.String("cid", "", "campaign ID")
 	dryRun  = flag.Bool("d", false, "Dry run")
-	groups  = flag.String("g", "", "Groups")
+	groups  = flag.String("g", "", "User groups")
 	path    = flag.String("p", "", "HTML file path")
-	subject = flag.String("t", "", "Subject")
+	subject = flag.String("t", "", "mail subject")
 )
 
 func replaceReader(html *[]byte, cid string, seed string, uid string) {

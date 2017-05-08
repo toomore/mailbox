@@ -1,3 +1,22 @@
+// mailbox_campaign - create, list, hash campaign info.
+/*
+
+Usage:
+
+	mailbox_campaign [flags ...] [cmd]
+
+The cmd are:
+
+	`create`: create a campaign
+	`list`: list all campaign info
+	`hash`: make a hash with c(cid), u(uid)
+
+The flags are:
+
+	`-c`: cid
+	`-u`: uid
+
+*/
 package main
 
 import (
