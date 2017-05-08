@@ -28,9 +28,9 @@ Docker
 Required
 ---------
 1. AWS SES `KEY`, `Token`.
-2. Update `./prod-run-cmd.sh`, `./dev-run-cmd.sh` files.
-    1. `mailbox_ses_api`：AWS SES KEY
-    2. `mailbox_ses_key`：AWS SES Token
+2. Update `./Makefile run_cmd`, `./dev-run-cmd.sh` files.
+    1. `mailbox_ses_key`：AWS SES KEY
+    2. `mailbox_ses_token`：AWS SES Token
     3. `mailbox_ses_sender`：發送者的 `email`。如：`Toomore Chiang <toomore0929@gmail.com>`.
     4. `mailbox_web_site`：接收開信網址，不包含 `https` 與結尾。如：`open.example.com`.
 

@@ -61,8 +61,8 @@ run_cmd:
 		-docker run -it --rm                                                   \
 					--link mailbox-mariadb-prod:MARIADB                        \
 					-v $(shell pwd)/csv:/csv                                   \
-					-e "mailbox_ses_api=???"                                   \
 					-e "mailbox_ses_key=???"                                   \
+					-e "mailbox_ses_token=???"                                 \
 					-e "mailbox_ses_sender=???"                                \
 					-e "mailbox_web_site=???"                                  \
 					toomore/mailbox:cmd sh

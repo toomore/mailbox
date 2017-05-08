@@ -17,7 +17,7 @@ func init() {
 		&aws.Config{
 			Region: aws.String("us-east-1"),
 			Credentials: credentials.NewStaticCredentials(
-				os.Getenv("mailbox_ses_api"), os.Getenv("mailbox_ses_key"), ""),
+				os.Getenv("mailbox_ses_key"), os.Getenv("mailbox_ses_token"), ""),
 		},
 	),
 	))
