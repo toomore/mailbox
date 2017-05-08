@@ -11,6 +11,9 @@ The flags are:
 	`-p`: HTML file path
 	`-t`: Mail Subject
 	`-d`: Dry run all but not to send mail
+	`-uid`: User ID
+
+`-uid`, `-g` can't use together
 
 Example:
 
@@ -21,6 +24,7 @@ package main
 
 import (
 	"bytes"
+	"database/sql"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -40,6 +44,7 @@ var (
 	groups  = flag.String("g", "", "User groups")
 	path    = flag.String("p", "", "HTML file path")
 	subject = flag.String("t", "", "mail subject")
+	uid     = flag.String("uid", "", "User ID")
 )
 
 func replaceReader(html *[]byte, cid string, seed string, uid string) {
@@ -65,8 +70,12 @@ func main() {
 		log.Fatal(err)
 	}
 	seed := campaign.GetSeed(*cid)
-	conn := utils.GetConn()
-	rows, err := conn.Query(`SELECT id,email,f_name,l_name from user where alive=1 and groups=?`, *groups)
+	var rows *sql.Rows
+	if *uid != "" {
+		rows, err = utils.GetConn().Query(`SELECT id,email,f_name,l_name from user where alive=1 and id=?`, *uid)
+	} else {
+		rows, err = utils.GetConn().Query(`SELECT id,email,f_name,l_name from user where alive=1 and groups=?`, *groups)
+	}
 	defer rows.Close()
 	if err != nil {
 		log.Fatal(err)
@@ -94,5 +103,9 @@ func main() {
 		}
 		count++
 	}
-	log.Printf("\n  cid: %s, groups: %s, count: %d\n  Subject: `%s`\n", *cid, *groups, count, *subject)
+	if *uid != "" {
+		log.Printf("\n  cid: %s, uid: %s, count: %d\n  Subject: `%s`\n", *cid, *uid, count, *subject)
+	} else {
+		log.Printf("\n  cid: %s, groups: %s, count: %d\n  Subject: `%s`\n", *cid, *groups, count, *subject)
+	}
 }
