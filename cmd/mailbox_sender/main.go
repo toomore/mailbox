@@ -59,6 +59,10 @@ func replaceReader(html *[]byte, cid string, seed string, uid string) {
 		1)
 }
 
+func replaceFname(html *[]byte, fname string) {
+	*html = bytes.Replace(*html, []byte("{{FNAME}}"), []byte(fname), -1)
+}
+
 func main() {
 	flag.Parse()
 	file, err := os.Open(*path)
@@ -93,6 +97,7 @@ func main() {
 		rows.Scan(&no, &email, &fname, &lname)
 
 		msg = body
+		replaceFname(&msg, fname)
 		replaceReader(&msg, *cid, seed, no)
 		params := mails.GenParams(
 			fmt.Sprintf("%s %s <%s>", fname, lname, email),
