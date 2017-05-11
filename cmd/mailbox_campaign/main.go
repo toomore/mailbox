@@ -56,10 +56,12 @@ func list() {
 		log.Fatal(err)
 	}
 	defer rows.Close()
-	var id string
-	var seed string
-	var created time.Time
-	var updated time.Time
+	var (
+		id      string
+		seed    string
+		created time.Time
+		updated time.Time
+	)
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
 	fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", "id", "seed", "created", "updated")
 	for rows.Next() {
@@ -79,6 +81,38 @@ func makeHash() {
 	log.Printf("/read/%x?%s\n", campaign.MakeMac(*cid, data), data.Encode())
 }
 
+func reader(cid string, groups string) {
+	rows, err := conn.Query(`SELECT id,email,f_name,reader.created FROM user LEFT JOIN reader ON (id=reader.uid and reader.cid=?) WHERE groups=? GROUP BY id;`, cid, groups)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var (
+		id      string
+		email   string
+		fname   string
+		created sql.NullString
+	)
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", "id", "email", "f_name", "open")
+	for rows.Next() {
+		if err := rows.Scan(&id, &email, &fname, &created); err != nil {
+			log.Println("[err]", err)
+		} else {
+			if created.Valid {
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", id, email, fname, created.String)
+			} else {
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", id, email, fname, "Not open")
+			}
+		}
+	}
+	w.Flush()
+}
+
+func printTips() {
+	fmt.Println("mailbox_campaign [cmd]\ncmd: `create`, `list`, `hash`, `reader`")
+}
+
 func main() {
 	flag.Parse()
 	args := flag.Args()
@@ -92,8 +126,14 @@ func main() {
 			list()
 		case "hash":
 			makeHash()
+		case "reader":
+			if len(args) >= 2 {
+				reader(args[1], args[2])
+			} else {
+				printTips()
+			}
 		}
 	} else {
-		fmt.Println("mailbox_campaign [cmd]\ncmd: `create`, `list`, `hash`")
+		printTips()
 	}
 }
