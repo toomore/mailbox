@@ -81,17 +81,24 @@ func makeHash() {
 	log.Printf("/read/%x?%s\n", campaign.MakeMac(*cid, data), data.Encode())
 }
 
-func reader(cid string, groups string) {
-	rows, err := conn.Query(`SELECT id,email,f_name,reader.created FROM user LEFT JOIN reader ON (id=reader.uid and reader.cid=?) WHERE groups=? GROUP BY id;`, cid, groups)
+func openGroups(cid string, groups string) {
+	rows, err := conn.Query(`
+	SELECT id,email,f_name,reader.created
+	FROM user
+	LEFT JOIN reader ON (id=reader.uid and reader.cid=?)
+	WHERE groups=?
+	GROUP BY id;`, cid, groups)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer rows.Close()
 	var (
-		id      string
-		email   string
-		fname   string
-		created sql.NullString
+		id        string
+		email     string
+		fname     string
+		created   sql.NullString
+		nums      int
+		openCount int
 	)
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
 	fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", "id", "email", "f_name", "open")
@@ -99,18 +106,54 @@ func reader(cid string, groups string) {
 		if err := rows.Scan(&id, &email, &fname, &created); err != nil {
 			log.Println("[err]", err)
 		} else {
+			nums++
 			if created.Valid {
 				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", id, email, fname, created.String)
+				openCount++
 			} else {
 				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", id, email, fname, "Not open")
 			}
 		}
 	}
+	fmt.Fprintf(w, "%s\t%s\t%s\t%.2f%%\n", "", "", "", float64(openCount)/float64(nums)*100)
+	w.Flush()
+}
+
+func openList(cid string) {
+	rows, err := conn.Query(`
+	SELECT uid,u.email,count(*) AS count
+	FROM reader, user AS u
+	WHERE uid=u.id AND cid=?
+	GROUP BY uid
+	ORDER BY count DESC`, cid)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var (
+		count int
+		email string
+		nums  int
+		sum   int
+		uid   string
+	)
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
+	fmt.Fprintf(w, "%s\t%s\t%s\n", "uid", "email", "count")
+	for rows.Next() {
+		if err := rows.Scan(&uid, &email, &count); err != nil {
+			log.Println("[err]", err)
+		} else {
+			sum += count
+			nums++
+			fmt.Fprintf(w, "%s\t%s\t%d\n", uid, email, count)
+		}
+	}
+	fmt.Fprintf(w, "%d\t%.02f%%\t%d\n", nums, float64(sum)/float64(nums)*100, sum)
 	w.Flush()
 }
 
 func printTips() {
-	fmt.Println("mailbox_campaign [cmd]\ncmd: `create`, `list`, `hash`, `reader`")
+	fmt.Println("mailbox_campaign [cmd]\ncmd: `create`, `list`, `hash`, `open [cid] [groups]`, `openlist [cid]`")
 }
 
 func main() {
@@ -126,12 +169,20 @@ func main() {
 			list()
 		case "hash":
 			makeHash()
-		case "reader":
-			if len(args) >= 2 {
-				reader(args[1], args[2])
+		case "open":
+			if len(args) >= 3 {
+				openGroups(args[1], args[2])
 			} else {
 				printTips()
 			}
+		case "openlist":
+			if len(args) >= 2 {
+				openList(args[1])
+			} else {
+				printTips()
+			}
+		default:
+			printTips()
 		}
 	} else {
 		printTips()
