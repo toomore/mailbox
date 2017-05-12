@@ -152,8 +152,43 @@ func openList(cid string) {
 	w.Flush()
 }
 
+func openHistory(cid string, groups string) {
+	rows, err := conn.Query(`
+	SELECT no,uid,u.email,u.f_name,reader.created,ip,agent
+	FROM reader, user AS u
+	WHERE cid=? AND uid=u.id AND u.groups=?;
+	`, cid, groups)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var (
+		no      string
+		uid     string
+		email   string
+		fname   string
+		created time.Time
+		ip      string
+		agent   string
+		count   int
+	)
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "no", "uid", "email", "fname", "created", "ip", "agent")
+	for rows.Next() {
+		if err := rows.Scan(&no, &uid, &email, &fname, &created, &ip, &agent); err != nil {
+			log.Println("[err]", err)
+		} else {
+			count++
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", no, uid, email, fname, created, ip, agent)
+		}
+	}
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "no", "uid", "email", "fname", "created", "ip", "agent")
+	w.Flush()
+	fmt.Printf("Count: %d\n", count)
+}
+
 func printTips() {
-	fmt.Println("mailbox_campaign [cmd]\ncmd: `create`, `list`, `hash`, `open [cid] [groups]`, `openlist [cid]`")
+	fmt.Println("mailbox_campaign [cmd]\ncmd: `create`, `list`, `hash`, `open [cid] [groups]`, `openlist [cid]`, `openhistory [cid] [groups]`")
 }
 
 func main() {
@@ -178,6 +213,12 @@ func main() {
 		case "openlist":
 			if len(args) >= 2 {
 				openList(args[1])
+			} else {
+				printTips()
+			}
+		case "openhistory":
+			if len(args) >= 3 {
+				openHistory(args[1], args[2])
 			} else {
 				printTips()
 			}
