@@ -85,7 +85,7 @@ func openGroups(cid string, groups string) {
 	rows, err := conn.Query(`
 	SELECT id,email,f_name,reader.created
 	FROM user
-	LEFT JOIN reader ON (id=reader.uid and reader.cid=?)
+	LEFT JOIN reader ON (id=reader.uid AND reader.cid=?)
 	WHERE groups=?
 	GROUP BY id;`, cid, groups)
 	if err != nil {
@@ -156,7 +156,8 @@ func openHistory(cid string, groups string) {
 	rows, err := conn.Query(`
 	SELECT no,uid,u.email,u.f_name,reader.created,ip,agent
 	FROM reader, user AS u
-	WHERE cid=? AND uid=u.id AND u.groups=?;
+	WHERE cid=? AND uid=u.id AND u.groups=?
+	ORDER BY reader.created ASC;
 	`, cid, groups)
 	if err != nil {
 		log.Fatal(err)
