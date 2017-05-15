@@ -6,4 +6,4 @@ docker run -d --name mailbox-mariadb -v /srv/mailbox_mariadb:/var/lib/mysql \
            -e CHARACTER_SET_SERVER='utf8'                                   \
            -e COLLATION_SERVER='utf8_general_ci'                            \
            -e INIT_CONNECT='SET NAMES utf8'                                 \
-           mariadb:10.1.22
+           mariadb:10.1.23
