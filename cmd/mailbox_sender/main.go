@@ -76,9 +76,9 @@ func main() {
 	seed := campaign.GetSeed(*cid)
 	var rows *sql.Rows
 	if *uid != "" {
-		rows, err = utils.GetConn().Query(`SELECT id,email,f_name,l_name from user where alive=1 and id=?`, *uid)
+		rows, err = utils.GetConn().Query(`SELECT id,email,f_name,l_name FROM user WHERE alive=1 AND id=?`, *uid)
 	} else {
-		rows, err = utils.GetConn().Query(`SELECT id,email,f_name,l_name from user where alive=1 and groups=?`, *groups)
+		rows, err = utils.GetConn().Query(`SELECT id,email,f_name,l_name FROM user WHERE alive=1 AND groups=?`, *groups)
 	}
 	defer rows.Close()
 	if err != nil {
