@@ -119,13 +119,13 @@ func openGroups(cid string, groups string) {
 	w.Flush()
 }
 
-func openList(cid string) {
+func openList(cid string, groups string) {
 	rows, err := conn.Query(`
 	SELECT uid,u.email,count(*) AS count
 	FROM reader, user AS u
-	WHERE uid=u.id AND cid=?
+	WHERE uid=u.id AND cid=? AND u.groups=?
 	GROUP BY uid
-	ORDER BY count DESC`, cid)
+	ORDER BY count DESC`, cid, groups)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -195,7 +195,7 @@ func printTips() {
 	list,
 	-c [cid] -u [userID] hash,
 	open [cid] [groups],
-	openlist [cid],
+	openlist [cid] [groups],
 	openhistory [cid] [groups]`)
 }
 
@@ -219,8 +219,8 @@ func main() {
 				printTips()
 			}
 		case "openlist":
-			if len(args) >= 2 {
-				openList(args[1])
+			if len(args) >= 3 {
+				openList(args[1], args[2])
 			} else {
 				printTips()
 			}
