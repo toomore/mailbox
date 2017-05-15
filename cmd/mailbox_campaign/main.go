@@ -63,7 +63,7 @@ func list() {
 		updated time.Time
 	)
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
-	fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", "id", "seed", "created", "updated")
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", "id", "seed", "created", "updated*")
 	for rows.Next() {
 		if err := rows.Scan(&id, &seed, &created, &updated); err != nil {
 			log.Println("[err]", err)
@@ -101,7 +101,7 @@ func openGroups(cid string, groups string) {
 		openCount int
 	)
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
-	fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", "id", "email", "f_name", "open")
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", "id*", "email", "f_name", "open")
 	for rows.Next() {
 		if err := rows.Scan(&id, &email, &fname, &created); err != nil {
 			log.Println("[err]", err)
@@ -138,7 +138,7 @@ func openList(cid string) {
 		uid   string
 	)
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
-	fmt.Fprintf(w, "%s\t%s\t%s\n", "uid", "email", "count")
+	fmt.Fprintf(w, "%s\t%s\t%s\n", "uid", "email", "count*")
 	for rows.Next() {
 		if err := rows.Scan(&uid, &email, &count); err != nil {
 			log.Println("[err]", err)
@@ -174,7 +174,7 @@ func openHistory(cid string, groups string) {
 		count   int
 	)
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
-	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "no", "uid", "email", "fname", "created", "ip", "agent")
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "no", "uid", "email", "fname", "created*", "ip", "agent")
 	for rows.Next() {
 		if err := rows.Scan(&no, &uid, &email, &fname, &created, &ip, &agent); err != nil {
 			log.Println("[err]", err)
@@ -183,13 +183,20 @@ func openHistory(cid string, groups string) {
 			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", no, uid, email, fname, created, ip, agent)
 		}
 	}
-	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "no", "uid", "email", "fname", "created", "ip", "agent")
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "no", "uid", "email", "fname", "created*", "ip", "agent")
 	w.Flush()
 	fmt.Printf("Count: %d\n", count)
 }
 
 func printTips() {
-	fmt.Println("mailbox_campaign [cmd]\ncmd: `create`, `list`, `hash`, `open [cid] [groups]`, `openlist [cid]`, `openhistory [cid] [groups]`")
+	fmt.Println(`mailbox_campaign [cmd]
+  cmd:
+	create,
+	list,
+	-c [cid] -u [userID] hash,
+	open [cid] [groups],
+	openlist [cid],
+	openhistory [cid] [groups]`)
 }
 
 func main() {
