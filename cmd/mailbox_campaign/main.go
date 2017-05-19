@@ -121,7 +121,7 @@ func openGroups(cid string, groups string) {
 
 func openList(cid string, groups string) {
 	rows, err := conn.Query(`
-	SELECT uid,u.email,count(*) AS count, min(reader.created) as open, max(reader.created) as lastest
+	SELECT uid,u.email,count(*) AS count, min(reader.created) as open, max(reader.created) as latest
 	FROM reader, user AS u
 	WHERE uid=u.id AND cid=? AND u.groups=?
 	GROUP BY uid
@@ -131,23 +131,23 @@ func openList(cid string, groups string) {
 	}
 	defer rows.Close()
 	var (
-		count   int
-		email   string
-		nums    int
-		fopen   string
-		lastest string
-		sum     int
-		uid     string
+		count  int
+		email  string
+		nums   int
+		fopen  string
+		latest string
+		sum    int
+		uid    string
 	)
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
-	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", "uid", "email", "count*", "open", "lastest")
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", "uid", "email", "count*", "open", "latest")
 	for rows.Next() {
-		if err := rows.Scan(&uid, &email, &count, &fopen, &lastest); err != nil {
+		if err := rows.Scan(&uid, &email, &count, &fopen, &latest); err != nil {
 			log.Println("[err]", err)
 		} else {
 			sum += count
 			nums++
-			fmt.Fprintf(w, "%s\t%s\t%d\t%s\t%s\n", uid, email, count, fopen, lastest)
+			fmt.Fprintf(w, "%s\t%s\t%d\t%s\t%s\n", uid, email, count, fopen, latest)
 		}
 	}
 	fmt.Fprintf(w, "%d\t%.02f%%\t%d\n", nums, float64(sum)/float64(nums)*100, sum)
