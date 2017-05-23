@@ -24,6 +24,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/md5"
 	"database/sql"
 	"flag"
 	"fmt"
@@ -31,6 +32,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"regexp"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/toomore/mailbox/campaign"
@@ -45,6 +47,7 @@ var (
 	path    = flag.String("p", "", "HTML file path")
 	subject = flag.String("t", "", "mail subject")
 	uid     = flag.String("uid", "", "User ID")
+	areg    = regexp.MustCompile(`href="(http[s]?://[a-zA-z0-9/\.:?=,-]+)"`)
 )
 
 func replaceReader(html *[]byte, cid string, seed string, uid string) {
@@ -61,6 +64,42 @@ func replaceReader(html *[]byte, cid string, seed string, uid string) {
 
 func replaceFname(html *[]byte, fname string) {
 	*html = bytes.Replace(*html, []byte("{{FNAME}}"), []byte(fname), -1)
+}
+
+func replaceATag(html *[]byte, allATags []linksData) {
+	for i, v := range allATags {
+		fmt.Printf("%d %s\n", i, v)
+		*html = bytes.Replace(*html, v.url, []byte(v.md5h), -1)
+	}
+	fmt.Printf("%s", *html)
+}
+
+type linksData struct {
+	md5h   string
+	linkID string
+	url    []byte
+}
+
+func filterATags(body []byte) []linksData {
+	allATags := areg.FindAllSubmatch(body, -1)
+	result := make([]linksData, len(allATags))
+	for i, v := range allATags {
+		md5h := md5.New()
+		md5h.Write(v[1])
+		md5hstr := fmt.Sprintf("%x", md5h.Sum(nil))
+		linkID := fmt.Sprintf("%s", utils.GenSeed())
+		_, err := utils.GetConn().Query(`INSERT INTO links(id,cid,url,urlhash) VALUES(?,?,?,?)`, linkID, *cid, v[1], md5hstr)
+		if err != nil {
+			rows, _ := utils.GetConn().Query(`SELECT id FROM links WHERE cid=? AND urlhash=?`, *cid, md5hstr)
+			for rows.Next() {
+				rows.Scan(&linkID)
+			}
+		}
+		result[i].md5h = md5hstr
+		result[i].linkID = linkID
+		result[i].url = v[1]
+	}
+	return result
 }
 
 func main() {
@@ -85,6 +124,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	allATags := filterATags(body)
+
 	var count int
 	for rows.Next() {
 		var (
@@ -97,6 +138,7 @@ func main() {
 		rows.Scan(&no, &email, &fname, &lname)
 
 		msg = body
+		replaceATag(&msg, allATags)
 		replaceFname(&msg, fname)
 		replaceReader(&msg, *cid, seed, no)
 		params := mails.GenParams(

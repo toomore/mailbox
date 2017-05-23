@@ -33,3 +33,14 @@ CREATE TABLE IF NOT EXISTS reader (
     INDEX cid (cid ASC)
     ) CHARACTER SET 'utf8'
       COLLATE 'utf8_icelandic_ci';
+
+CREATE TABLE IF NOT EXISTS links (
+    id CHAR(8) NOT NULL,
+    cid CHAR(8) NOT NULL,
+    url VARCHAR(256) NOT NULL,
+    urlhash VARCHAR(32) NOT NULL,
+    created DATETIME DEFAULT NOW(),
+    UNIQUE KEY cid_urlhash (cid, urlhash),
+    INDEX cid (cid ASC)
+    ) CHARACTER SET 'utf8'
+      COLLATE 'utf8_icelandic_ci';
