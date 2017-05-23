@@ -66,10 +66,17 @@ func replaceFname(html *[]byte, fname string) {
 	*html = bytes.Replace(*html, []byte("{{FNAME}}"), []byte(fname), -1)
 }
 
-func replaceATag(html *[]byte, allATags []linksData) {
+func replaceATag(html *[]byte, allATags []linksData, cid string, seed string, uid string) {
 	for i, v := range allATags {
+		data := url.Values{}
+		data.Set("c", cid)
+		data.Set("u", uid)
+		data.Set("l", v.linkID)
+		hm := campaign.MakeMacSeed(seed, data)
+
 		fmt.Printf("%d %s\n", i, v)
-		*html = bytes.Replace(*html, v.url, []byte(v.md5h), -1)
+		*html = bytes.Replace(*html, v.url,
+			[]byte(fmt.Sprintf("https://%s/door/%x?%s", os.Getenv("mailbox_web_site"), hm, data.Encode())), -1)
 	}
 	fmt.Printf("%s", *html)
 }
@@ -138,7 +145,7 @@ func main() {
 		rows.Scan(&no, &email, &fname, &lname)
 
 		msg = body
-		replaceATag(&msg, allATags)
+		replaceATag(&msg, allATags, *cid, seed, *uid)
 		replaceFname(&msg, fname)
 		replaceReader(&msg, *cid, seed, no)
 		params := mails.GenParams(
