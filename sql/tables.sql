@@ -37,8 +37,8 @@ CREATE TABLE IF NOT EXISTS reader (
 CREATE TABLE IF NOT EXISTS links (
     id CHAR(8) NOT NULL,
     cid CHAR(8) NOT NULL,
-    url VARCHAR(256) NOT NULL,
-    urlhash VARCHAR(32) NOT NULL,
+    url CHAR(255) NOT NULL,
+    urlhash CHAR(32) NOT NULL,
     created DATETIME DEFAULT NOW(),
     UNIQUE KEY cid_urlhash (cid, urlhash),
     INDEX cid (cid ASC)
