@@ -72,6 +72,7 @@ func replaceATag(html *[]byte, allATags []linksData, cid string, seed string, ui
 		data.Set("c", cid)
 		data.Set("u", uid)
 		data.Set("l", v.linkID)
+		data.Set("t", "a")
 		hm := campaign.MakeMacSeed(seed, data)
 
 		*html = bytes.Replace(*html, v.url,
