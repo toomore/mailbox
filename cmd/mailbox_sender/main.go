@@ -67,18 +67,16 @@ func replaceFname(html *[]byte, fname string) {
 }
 
 func replaceATag(html *[]byte, allATags []linksData, cid string, seed string, uid string) {
-	for i, v := range allATags {
+	for _, v := range allATags {
 		data := url.Values{}
 		data.Set("c", cid)
 		data.Set("u", uid)
 		data.Set("l", v.linkID)
 		hm := campaign.MakeMacSeed(seed, data)
 
-		fmt.Printf("%d %s\n", i, v)
 		*html = bytes.Replace(*html, v.url,
 			[]byte(fmt.Sprintf("https://%s/door/%x?%s", os.Getenv("mailbox_web_site"), hm, data.Encode())), -1)
 	}
-	fmt.Printf("%s", *html)
 }
 
 type linksData struct {
@@ -152,7 +150,12 @@ func main() {
 			fmt.Sprintf("%s %s <%s>", fname, lname, email),
 			string(msg),
 			*subject)
-		if !*dryRun {
+		if *dryRun {
+			log.Printf("%s\n", msg)
+			for i, v := range allATags {
+				fmt.Printf("%d => [%s] %s\n", i, v.linkID, v.url)
+			}
+		} else {
 			mails.Send(params)
 		}
 		count++
