@@ -34,6 +34,21 @@ CREATE TABLE IF NOT EXISTS reader (
     ) CHARACTER SET 'utf8'
       COLLATE 'utf8_icelandic_ci';
 
+CREATE TABLE IF NOT EXISTS doors (
+    no INT NOT NULL AUTO_INCREMENT,
+    uid INT NOT NULL,
+    cid CHAR(8) NOT NULL,
+    linkid CHAR(8) NOT NULL,
+    ip CHAR(15) NOT NULL,
+    agent CHAR(128) NOT NULL,
+    created DATETIME DEFAULT NOW(),
+    PRIMARY KEY (no),
+    INDEX uid (uid ASC),
+    INDEX linkid (linkid ASC),
+    INDEX cid (cid ASC)
+    ) CHARACTER SET 'utf8'
+      COLLATE 'utf8_icelandic_ci';
+
 CREATE TABLE IF NOT EXISTS links (
     id CHAR(8) NOT NULL,
     cid CHAR(8) NOT NULL,

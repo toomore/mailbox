@@ -66,6 +66,8 @@ func door(w http.ResponseWriter, r *http.Request) {
 	}
 	hmbyte, _ := hex.DecodeString(hm)
 	if campaign.CheckMac(hmbyte, v.Get("c"), v) {
+		utils.GetConn().Query(`INSERT INTO doors(cid,uid,linkid,ip,agent) VALUES(?,?,?,?,?)`,
+			v.Get("c"), v.Get("u"), v.Get("l"), r.Header.Get("X-Real-Ip"), r.Header.Get("User-Agent"))
 		log.Println("[door] Pass")
 	} else {
 		log.Println("[door] Hash Fail!!!")
