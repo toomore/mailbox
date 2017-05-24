@@ -48,7 +48,7 @@ var (
 	path        = flag.String("p", "", "HTML file path")
 	subject     = flag.String("t", "", "mail subject")
 	uid         = flag.String("uid", "", "User ID")
-	areg        = regexp.MustCompile(`href="(http[s]?://[a-zA-z0-9/\.:?=,-]+)"`)
+	areg        = regexp.MustCompile(`href="(http[s]?://[a-zA-z0-9/\.:?=,-@]+)"`)
 )
 
 func replaceReader(html *[]byte, cid string, seed string, uid string) {
@@ -149,7 +149,7 @@ func main() {
 
 		msg = body
 		if *replaceLink {
-			replaceATag(&msg, allATags, *cid, seed, *uid)
+			replaceATag(&msg, allATags, *cid, seed, no)
 		}
 		replaceFname(&msg, fname)
 		replaceReader(&msg, *cid, seed, no)
