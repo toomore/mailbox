@@ -41,13 +41,14 @@ import (
 )
 
 var (
-	cid     = flag.String("cid", "", "campaign ID")
-	dryRun  = flag.Bool("d", false, "Dry run")
-	groups  = flag.String("g", "", "User groups")
-	path    = flag.String("p", "", "HTML file path")
-	subject = flag.String("t", "", "mail subject")
-	uid     = flag.String("uid", "", "User ID")
-	areg    = regexp.MustCompile(`href="(http[s]?://[a-zA-z0-9/\.:?=,-]+)"`)
+	cid         = flag.String("cid", "", "campaign ID")
+	dryRun      = flag.Bool("d", false, "Dry run")
+	replaceLink = flag.Bool("rl", true, "Replace A tag links")
+	groups      = flag.String("g", "", "User groups")
+	path        = flag.String("p", "", "HTML file path")
+	subject     = flag.String("t", "", "mail subject")
+	uid         = flag.String("uid", "", "User ID")
+	areg        = regexp.MustCompile(`href="(http[s]?://[a-zA-z0-9/\.:?=,-]+)"`)
 )
 
 func replaceReader(html *[]byte, cid string, seed string, uid string) {
@@ -130,7 +131,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	allATags := filterATags(body)
+	var allATags []linksData
+	if *replaceLink {
+		allATags = filterATags(body)
+	}
 
 	var count int
 	for rows.Next() {
@@ -144,7 +148,9 @@ func main() {
 		rows.Scan(&no, &email, &fname, &lname)
 
 		msg = body
-		replaceATag(&msg, allATags, *cid, seed, *uid)
+		if *replaceLink {
+			replaceATag(&msg, allATags, *cid, seed, *uid)
+		}
 		replaceFname(&msg, fname)
 		replaceReader(&msg, *cid, seed, no)
 		params := mails.GenParams(
