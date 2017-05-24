@@ -31,7 +31,7 @@ Docker
 
     sh ./make.sh;
 
-**Required:** `toomore/mailbox:base`, run `sh ../build-alpine.sh` first.
+**Required:** `toomore/mailbox:base`, run `sh ../build-base.sh` first.
 
 ... and Run
 

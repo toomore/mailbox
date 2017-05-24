@@ -12,6 +12,7 @@ The flags are:
 	`-t`: Mail Subject
 	`-d`: Dry run all but not to send mail
 	`-uid`: User ID
+	`-rl`: Replace A tag links (default is true)
 
 `-uid`, `-g` can't use together
 
