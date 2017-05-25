@@ -14,6 +14,7 @@ package main
 import (
 	"encoding/hex"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -26,8 +27,9 @@ import (
 )
 
 var (
-	httpPort = flag.String("p", ":8801", "Http port")
-	cExpr    = regexp.MustCompile(`/(read|door)/([0-9a-z]+)`)
+	cExpr      = regexp.MustCompile(`/(read|door)/([0-9a-z]+)`)
+	httpPort   = flag.String("p", ":8801", "Http port")
+	linksCache = make(map[string]string)
 )
 
 func read(w http.ResponseWriter, r *http.Request) {
@@ -75,12 +77,23 @@ func door(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%+v", r)
 	log.Println(r.Header.Get("X-Real-Ip"))
 	log.Println(r.Header.Get("User-Agent"))
+
+	linksCacheKey := fmt.Sprintf("%s%s", v.Get("c"), v.Get("l"))
+	if url, ok := linksCache[linksCacheKey]; ok {
+		log.Println("Using door cache", linksCacheKey)
+		http.Redirect(w, r, url, http.StatusSeeOther)
+		return
+	}
+
 	rows, err := utils.GetConn().Query(`SELECT url FROM links WHERE cid=? AND id=?`, v.Get("c"), v.Get("l"))
 	if err == nil {
 		for rows.Next() {
 			var url string
 			rows.Scan(&url)
+			linksCache[linksCacheKey] = url
+			log.Println("Find door", linksCacheKey)
 			http.Redirect(w, r, url, http.StatusSeeOther)
+			return
 		}
 	}
 }
