@@ -38,8 +38,7 @@ func GetSeed(campaignID string) string {
 	if seed, ok = cacheSeed[campaignID]; ok {
 		return seed
 	}
-	conn := utils.GetConn()
-	rows, err := conn.Query(`SELECT seed FROM campaign WHERE id=? `, campaignID)
+	rows, err := utils.GetConn().Query(`SELECT seed FROM campaign WHERE id=? `, campaignID)
 	defer rows.Close()
 	if err != nil {
 		log.Fatal(err)

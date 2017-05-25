@@ -96,7 +96,7 @@ func insertInto(data []user) {
 }
 
 func readUser() {
-	rows, err := conn.Query(`select email,groups,created from user;`)
+	rows, err := conn.Query(`SELECT email,groups,created FROM user;`)
 	defer rows.Close()
 	if err != nil {
 		log.Fatal(err)
