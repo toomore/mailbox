@@ -77,8 +77,8 @@ func replaceATag(html *[]byte, allATags []linksData, cid string, seed string, ui
 		data.Set("t", "a")
 		hm := campaign.MakeMacSeed(seed, data)
 
-		*html = bytes.Replace(*html, v.url,
-			[]byte(fmt.Sprintf("https://%s/door/%x?%s", os.Getenv("mailbox_web_site"), hm, data.Encode())), -1)
+		*html = bytes.Replace(*html, []byte(fmt.Sprintf("href=\"%s\"", v.url)),
+			[]byte(fmt.Sprintf("href=\"https://%s/door/%x?%s\"", os.Getenv("mailbox_web_site"), hm, data.Encode())), -1)
 	}
 }
 
