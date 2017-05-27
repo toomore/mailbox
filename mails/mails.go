@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/toomore/mailbox/campaign"
 )
 
 var svc *ses.SES
@@ -66,12 +67,13 @@ func Send(params *ses.SendEmailInput) {
 }
 
 // ProcessSend is to start send from rows
-func ProcessSend(body []byte, rows *sql.Rows, cid string, seed string, replaceLink bool, subject string, uid string, groups string, dryRun bool) {
+func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subject string, uid string, groups string, dryRun bool) {
 	var allATags []LinksData
 	if replaceLink {
 		allATags = FilterATags(body, cid)
 	}
 
+	var seed = campaign.GetSeed(cid)
 	var count int
 	for rows.Next() {
 		var (

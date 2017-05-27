@@ -31,7 +31,6 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/toomore/mailbox/campaign"
 	"github.com/toomore/mailbox/mails"
 	"github.com/toomore/mailbox/utils"
 )
@@ -56,7 +55,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	seed := campaign.GetSeed(*cid)
 	var rows *sql.Rows
 	if *uid != "" {
 		rows, err = utils.GetConn().Query(`SELECT id,email,f_name,l_name FROM user WHERE alive=1 AND id=?`, *uid)
@@ -68,5 +66,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	mails.ProcessSend(body, rows, *cid, seed, *replaceLink, *subject, *uid, *groups, *dryRun)
+	mails.ProcessSend(body, rows, *cid, *replaceLink, *subject, *uid, *groups, *dryRun)
 }
