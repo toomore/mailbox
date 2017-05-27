@@ -24,16 +24,12 @@ Example:
 package main
 
 import (
-	"bytes"
-	"crypto/md5"
 	"database/sql"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/url"
 	"os"
-	"regexp"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/toomore/mailbox/campaign"
@@ -49,66 +45,7 @@ var (
 	path        = flag.String("p", "", "HTML file path")
 	subject     = flag.String("t", "", "mail subject")
 	uid         = flag.String("uid", "", "User ID")
-	areg        = regexp.MustCompile(`href="(http[s]?://[a-zA-z0-9/\.:?=,-@]+)"`)
 )
-
-func replaceReader(html *[]byte, cid string, seed string, uid string) {
-	data := url.Values{}
-	data.Set("c", cid)
-	data.Set("u", uid)
-	hm := campaign.MakeMacSeed(seed, data)
-	*html = bytes.Replace(
-		*html,
-		[]byte("{{READER}}"),
-		[]byte(fmt.Sprintf("https://%s/read/%x?%s", os.Getenv("mailbox_web_site"), hm, data.Encode())),
-		1)
-}
-
-func replaceFname(html *[]byte, fname string) {
-	*html = bytes.Replace(*html, []byte("{{FNAME}}"), []byte(fname), -1)
-}
-
-func replaceATag(html *[]byte, allATags []linksData, cid string, seed string, uid string) {
-	for _, v := range allATags {
-		data := url.Values{}
-		data.Set("c", cid)
-		data.Set("u", uid)
-		data.Set("l", v.linkID)
-		data.Set("t", "a")
-		hm := campaign.MakeMacSeed(seed, data)
-
-		*html = bytes.Replace(*html, []byte(fmt.Sprintf("href=\"%s\"", v.url)),
-			[]byte(fmt.Sprintf("href=\"https://%s/door/%x?%s\"", os.Getenv("mailbox_web_site"), hm, data.Encode())), -1)
-	}
-}
-
-type linksData struct {
-	md5h   string
-	linkID string
-	url    []byte
-}
-
-func filterATags(body []byte) []linksData {
-	allATags := areg.FindAllSubmatch(body, -1)
-	result := make([]linksData, len(allATags))
-	for i, v := range allATags {
-		md5h := md5.New()
-		md5h.Write(v[1])
-		md5hstr := fmt.Sprintf("%x", md5h.Sum(nil))
-		linkID := fmt.Sprintf("%s", utils.GenSeed())
-		_, err := utils.GetConn().Query(`INSERT INTO links(id,cid,url,urlhash) VALUES(?,?,?,?)`, linkID, *cid, v[1], md5hstr)
-		if err != nil {
-			rows, _ := utils.GetConn().Query(`SELECT id FROM links WHERE cid=? AND urlhash=?`, *cid, md5hstr)
-			for rows.Next() {
-				rows.Scan(&linkID)
-			}
-		}
-		result[i].md5h = md5hstr
-		result[i].linkID = linkID
-		result[i].url = v[1]
-	}
-	return result
-}
 
 func main() {
 	flag.Parse()
@@ -132,9 +69,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var allATags []linksData
+	var allATags []mails.LinksData
 	if *replaceLink {
-		allATags = filterATags(body)
+		allATags = mails.FilterATags(body, *cid)
 	}
 
 	var count int
@@ -150,10 +87,10 @@ func main() {
 
 		msg = body
 		if *replaceLink {
-			replaceATag(&msg, allATags, *cid, seed, no)
+			mails.ReplaceATag(&msg, allATags, *cid, seed, no)
 		}
-		replaceFname(&msg, fname)
-		replaceReader(&msg, *cid, seed, no)
+		mails.ReplaceFname(&msg, fname)
+		mails.ReplaceReader(&msg, *cid, seed, no)
 		params := mails.GenParams(
 			fmt.Sprintf("%s %s <%s>", fname, lname, email),
 			string(msg),
@@ -161,7 +98,7 @@ func main() {
 		if *dryRun {
 			log.Printf("%s\n", msg)
 			for i, v := range allATags {
-				fmt.Printf("%d => [%s] %s\n", i, v.linkID, v.url)
+				fmt.Printf("%d => [%s] %s\n", i, v.LinkID, v.URL)
 			}
 		} else {
 			mails.Send(params)
