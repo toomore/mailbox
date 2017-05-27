@@ -26,7 +26,6 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -69,45 +68,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var allATags []mails.LinksData
-	if *replaceLink {
-		allATags = mails.FilterATags(body, *cid)
-	}
-
-	var count int
-	for rows.Next() {
-		var (
-			email string
-			fname string
-			lname string
-			msg   []byte
-			no    string
-		)
-		rows.Scan(&no, &email, &fname, &lname)
-
-		msg = body
-		if *replaceLink {
-			mails.ReplaceATag(&msg, allATags, *cid, seed, no)
-		}
-		mails.ReplaceFname(&msg, fname)
-		mails.ReplaceReader(&msg, *cid, seed, no)
-		params := mails.GenParams(
-			fmt.Sprintf("%s %s <%s>", fname, lname, email),
-			string(msg),
-			*subject)
-		if *dryRun {
-			log.Printf("%s\n", msg)
-			for i, v := range allATags {
-				fmt.Printf("%d => [%s] %s\n", i, v.LinkID, v.URL)
-			}
-		} else {
-			mails.Send(params)
-		}
-		count++
-	}
-	if *uid != "" {
-		log.Printf("\n  cid: %s, uid: %s, count: %d\n  Subject: `%s`\n", *cid, *uid, count, *subject)
-	} else {
-		log.Printf("\n  cid: %s, groups: %s, count: %d\n  Subject: `%s`\n", *cid, *groups, count, *subject)
-	}
+	mails.ProcessSend(body, rows, *cid, seed, *replaceLink, *subject, *uid, *groups, *dryRun)
 }
