@@ -66,36 +66,39 @@ func door(w http.ResponseWriter, r *http.Request) {
 	if len(match) >= 3 {
 		hm = match[2]
 	}
+
+	log.Printf("%+v", r)
+	log.Println(r.Header.Get("X-Real-Ip"))
+	log.Println(r.Header.Get("User-Agent"))
+
 	hmbyte, _ := hex.DecodeString(hm)
 	if campaign.CheckMac(hmbyte, v.Get("c"), v) {
 		utils.GetConn().Query(`INSERT INTO doors(cid,uid,linkid,ip,agent) VALUES(?,?,?,?,?)`,
 			v.Get("c"), v.Get("u"), v.Get("l"), r.Header.Get("X-Real-Ip"), r.Header.Get("User-Agent"))
 		log.Println("[door] Pass")
-	} else {
-		log.Println("[door] Hash Fail!!!")
-	}
-	log.Printf("%+v", r)
-	log.Println(r.Header.Get("X-Real-Ip"))
-	log.Println(r.Header.Get("User-Agent"))
 
-	linksCacheKey := fmt.Sprintf("%s%s", v.Get("c"), v.Get("l"))
-	if url, ok := linksCache[linksCacheKey]; ok {
-		log.Println("Using door cache", linksCacheKey)
-		http.Redirect(w, r, url, http.StatusSeeOther)
-		return
-	}
-
-	rows, err := utils.GetConn().Query(`SELECT url FROM links WHERE cid=? AND id=?`, v.Get("c"), v.Get("l"))
-	if err == nil {
-		for rows.Next() {
-			var url string
-			rows.Scan(&url)
-			linksCache[linksCacheKey] = url
-			log.Println("Find door", linksCacheKey)
+		linksCacheKey := fmt.Sprintf("%s%s", v.Get("c"), v.Get("l"))
+		if url, ok := linksCache[linksCacheKey]; ok {
+			log.Println("Using door cache", linksCacheKey)
 			http.Redirect(w, r, url, http.StatusSeeOther)
 			return
 		}
+
+		rows, err := utils.GetConn().Query(`SELECT url FROM links WHERE cid=? AND id=?`, v.Get("c"), v.Get("l"))
+		if err == nil {
+			for rows.Next() {
+				var url string
+				rows.Scan(&url)
+				linksCache[linksCacheKey] = url
+				log.Println("Find door", linksCacheKey)
+				http.Redirect(w, r, url, http.StatusSeeOther)
+				return
+			}
+		}
+	} else {
+		log.Println("[door] Hash Fail!!!")
 	}
+	w.WriteHeader(http.StatusNotFound)
 }
 
 func main() {
