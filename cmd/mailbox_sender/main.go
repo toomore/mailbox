@@ -66,5 +66,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	mails.ProcessSend(body, rows, *cid, *replaceLink, *subject, *uid, *groups, *dryRun)
+	mails.ProcessSend(body, rows, *cid, *replaceLink, *subject, *dryRun)
 }

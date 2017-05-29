@@ -67,7 +67,7 @@ func Send(params *ses.SendEmailInput) {
 }
 
 // ProcessSend is to start send from rows
-func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subject string, uid string, groups string, dryRun bool) {
+func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subject string, dryRun bool) {
 	var allATags []LinksData
 	if replaceLink {
 		allATags = FilterATags(body, cid)
@@ -91,23 +91,18 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 		}
 		ReplaceFname(&msg, fname)
 		ReplaceReader(&msg, cid, seed, no)
-		params := GenParams(
-			fmt.Sprintf("%s %s <%s>", fname, lname, email),
-			string(msg),
-			subject)
 		if dryRun {
 			log.Printf("%s\n", msg)
 			for i, v := range allATags {
-				fmt.Printf("%d => [%s] %s\n", i, v.LinkID, v.URL)
+				fmt.Printf("%02d => [%s] %s\n", i, v.LinkID, v.URL)
 			}
 		} else {
-			Send(params)
+			Send(GenParams(
+				fmt.Sprintf("%s %s <%s>", fname, lname, email),
+				string(msg),
+				subject))
 		}
 		count++
 	}
-	if uid != "" {
-		log.Printf("\n  cid: %s, uid: %s, count: %d\n  Subject: `%s`\n", cid, uid, count, subject)
-	} else {
-		log.Printf("\n  cid: %s, groups: %s, count: %d\n  Subject: `%s`\n", cid, groups, count, subject)
-	}
+	log.Printf("\n  cid: %s, count: %d\n  Subject: `%s`\n", cid, count, subject)
 }
