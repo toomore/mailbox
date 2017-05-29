@@ -12,7 +12,7 @@ import (
 	"github.com/toomore/mailbox/utils"
 )
 
-var areg = regexp.MustCompile(`href="(http[s]?://[a-zA-z0-9/\.:?=,-@]+)"`)
+var areg = regexp.MustCompile(`href="(http[s]?://[a-zA-z0-9/\.:?=,-@%()]+)"`)
 
 // ReplaceReader is to replace reader open mail link
 func ReplaceReader(html *[]byte, cid string, seed string, uid string) {
