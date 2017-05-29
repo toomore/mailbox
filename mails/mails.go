@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -14,8 +15,11 @@ import (
 )
 
 var svc *ses.SES
+var ql chan struct{}
 
 func init() {
+	ql = make(chan struct{}, 10)
+
 	svc = ses.New(session.Must(session.NewSession(
 		&aws.Config{
 			Region: aws.String("us-east-1"),
@@ -66,6 +70,13 @@ func Send(params *ses.SendEmailInput) {
 	}
 }
 
+// SendWG is with WaitGroup
+func SendWG(params *ses.SendEmailInput, wg *sync.WaitGroup) {
+	Send(params)
+	<-ql
+	wg.Done()
+}
+
 // ProcessSend is to start send from rows
 func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subject string, dryRun bool) {
 	var allATags []LinksData
@@ -75,6 +86,7 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 
 	var seed = campaign.GetSeed(cid)
 	var count int
+	var wg sync.WaitGroup
 	for rows.Next() {
 		var (
 			email string
@@ -97,12 +109,15 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 				fmt.Printf("%02d => [%s] %s\n", i, v.LinkID, v.URL)
 			}
 		} else {
-			Send(GenParams(
+			wg.Add(1)
+			ql <- struct{}{}
+			go SendWG(GenParams(
 				fmt.Sprintf("%s %s <%s>", fname, lname, email),
 				string(msg),
-				subject))
+				subject), &wg)
 		}
 		count++
 	}
+	wg.Wait()
 	log.Printf("\n  cid: %s, count: %d\n  Subject: `%s`\n", cid, count, subject)
 }
