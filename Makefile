@@ -41,6 +41,7 @@ start_web:
 start_mariadb:
 		-docker run -d --name mailbox-mariadb-prod                             \
 					-v /srv/mailbox_mariadb_prod:/var/lib/mysql                \
+					-v $(shell pwd)/mariadb.cnf:/etc/mysql/conf.d/mariadb.cnf  \
 					--log-opt max-size=64m                                     \
 					--log-opt max-file=1                                       \
 					-e MYSQL_ROOT_PASSWORD=mailboxdbs                          \
