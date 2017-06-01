@@ -48,14 +48,14 @@ start_mariadb:
 					-e CHARACTER_SET_SERVER='utf8'                             \
 					-e COLLATION_SERVER='utf8_general_ci'                      \
 					-e INIT_CONNECT='SET NAMES utf8'                           \
-					mariadb:10.1.23
+					mariadb:10.1.24
 
 .PHONY: start_mariadb_client
 start_mariadb_client:
 		-docker run -it --rm --link mailbox-mariadb-prod:MARIADB               \
 					-v $(shell pwd)/sql:/sql                                   \
 					-v $(shell pwd)/mariadb.cnf:/etc/mysql/conf.d/mariadb.cnf  \
-					mariadb:10.1.23 bash
+					mariadb:10.1.24 bash
 
 .PHONY: run_cmd
 run_cmd:
