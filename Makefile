@@ -44,6 +44,7 @@ start_mariadb:
 					-v $(shell pwd)/mariadb.cnf:/etc/mysql/conf.d/mariadb.cnf  \
 					--log-opt max-size=64m                                     \
 					--log-opt max-file=1                                       \
+					--restart=always                                           \
 					-e MYSQL_ROOT_PASSWORD=mailboxdbs                          \
 					-e CHARACTER_SET_SERVER='utf8'                             \
 					-e COLLATION_SERVER='utf8_general_ci'                      \
