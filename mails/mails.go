@@ -62,11 +62,13 @@ func GenParams(to string, message string, subject string) *ses.SendEmailInput {
 
 // Send is to send mail
 func Send(params *ses.SendEmailInput) {
-	resp, err := svc.SendEmail(params)
-	if err != nil {
-		log.Println(err)
-	} else {
-		log.Println(resp)
+	for i := 0; i < 5; i++ {
+		resp, err := svc.SendEmail(params)
+		if err == nil {
+			log.Println(*params.Destination.ToAddresses[0], resp)
+			return
+		}
+		log.Println(*params.Destination.ToAddresses[0], err)
 	}
 }
 
