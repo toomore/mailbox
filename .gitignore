@@ -3,6 +3,7 @@ cmd/mailbox_import_csv/mailbox_import_csv
 cmd/mailbox_sender/mailbox_sender
 cmd/mailbox_server/mailbox_server
 csv/
+dev-run-docker-dev.sh
 dev-run-docker-test.sh
 prod-run-cmd-s.sh
 venv/
