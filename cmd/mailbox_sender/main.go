@@ -26,9 +26,11 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/toomore/mailbox/mails"
@@ -42,7 +44,7 @@ var (
 	groups      = flag.String("g", "", "User groups")
 	path        = flag.String("p", "", "HTML file path")
 	subject     = flag.String("t", "", "mail subject")
-	uid         = flag.String("uid", "", "User ID")
+	uid         = flag.String("uid", "", "User ID, support more by splited with ','")
 )
 
 func main() {
@@ -57,7 +59,11 @@ func main() {
 	}
 	var rows *sql.Rows
 	if *uid != "" {
-		rows, err = utils.GetConn().Query(`SELECT id,email,f_name,l_name FROM user WHERE alive=1 AND id=?`, *uid)
+		uids := strings.Split(*uid, ",")
+		for i, v := range uids {
+			uids[i] = fmt.Sprintf("'%s'", v)
+		}
+		rows, err = utils.GetConn().Query(fmt.Sprintf(`SELECT id,email,f_name,l_name FROM user WHERE alive=1 AND id IN (%s)`, strings.Join(uids, ",")))
 	} else {
 		rows, err = utils.GetConn().Query(`SELECT id,email,f_name,l_name FROM user WHERE alive=1 AND groups=?`, *groups)
 	}
