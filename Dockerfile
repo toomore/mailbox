@@ -5,7 +5,6 @@ WORKDIR /go/src/github.com/toomore/mailbox/
 
 ADD ./campaign ./campaign
 ADD ./cmd/mailbox_campaign/main.go ./cmd/mailbox_campaign/main.go
-ADD ./cmd/mailbox_import_csv/main.go ./cmd/mailbox_import_csv/main.go
 ADD ./cmd/mailbox_sender/main.go ./cmd/mailbox_sender/main.go
 ADD ./cmd/mailbox_server/main.go ./cmd/mailbox_server/main.go
 ADD ./mailbox/cmd/root.go ./mailbox/cmd/root.go
