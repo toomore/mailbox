@@ -1,16 +1,3 @@
-// Copyright © 2017 NAME HERE <EMAIL ADDRESS>
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package cmd
 
 import (
@@ -28,7 +15,6 @@ import (
 var (
 	conn   *sql.DB
 	dryRun *bool
-	path   *string
 )
 
 type user struct {
@@ -116,31 +102,30 @@ var userCmd = &cobra.Command{
 }
 
 var importCmd = &cobra.Command{
-	Use:   "import",
+	Use:   "import [csv path ...]",
 	Short: "Import user from csv",
 	Long:  "Import user data from csv file",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("user.import", args, *path)
-		log.Printf(">>> Read csv: `%s`", *path)
-		data := readCSV(*path)
-		if *dryRun {
-			log.Println(">>> Dry Run data")
-			for i, v := range data {
-				fmt.Printf("%d %+v\n", i, v)
+		for n, path := range args {
+			log.Printf(">>> Read csv[%d]: `%s`", n, path)
+			if *dryRun {
+				log.Println(">>> Dry Run data")
+				for i, v := range readCSV(path) {
+					fmt.Printf("%d %+v\n", i, v)
+				}
+			} else {
+				conn = utils.GetConn()
+				insertInto(readCSV(path))
 			}
-		} else {
-			conn = utils.GetConn()
-			insertInto(data)
 		}
 	},
 }
 
 var showCmd = &cobra.Command{
-	Use:   "show",
+	Use:   "show [groups ...]",
 	Short: "Show users",
 	Long:  "Show all/group users",
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Println(args)
 		if len(args) == 0 {
 			cmd.Help()
 		} else {
@@ -153,7 +138,6 @@ var showCmd = &cobra.Command{
 }
 
 func init() {
-	path = importCmd.Flags().StringP("path", "p", "./list.csv", "csv file path")
 	dryRun = importCmd.Flags().BoolP("dryRun", "d", false, "Dry run read csv data")
 
 	RootCmd.AddCommand(userCmd)
