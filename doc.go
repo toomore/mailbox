@@ -5,4 +5,4 @@
 以 docker container 運行。
 
 */
-package mailbox
+package main

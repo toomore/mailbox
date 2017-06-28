@@ -18,14 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-package main
+package cmd
 
 import (
-	"github.com/toomore/mailbox/mailbox/cmd"
-
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/spf13/cobra"
+	"github.com/spf13/cobra/doc"
 )
 
-func main() {
-	cmd.Execute()
+// gendocCmd represents the gendoc command
+var gendocCmd = &cobra.Command{
+	Use:   "doc",
+	Short: "Gen docs md",
+	Run: func(cmd *cobra.Command, args []string) {
+		doc.GenMarkdownTree(RootCmd, "./")
+	},
+	Hidden: true,
+}
+
+func init() {
+	RootCmd.AddCommand(gendocCmd)
 }

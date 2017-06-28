@@ -4,10 +4,14 @@ MAINTAINER Toomore Chiang <toomore0929@gmail.com>
 WORKDIR /go/src/github.com/toomore/mailbox/
 
 ADD ./campaign ./campaign
-ADD ./cmd/mailbox_sender/main.go ./cmd/mailbox_sender/main.go
-ADD ./mailbox/cmd ./mailbox/cmd
-ADD ./mailbox/main.go ./mailbox/main.go
+ADD ./cmd/campaign.go ./cmd/campaign.go
+ADD ./cmd/gendoc.go ./cmd/gendoc.go
+ADD ./cmd/root.go ./cmd/root.go
+ADD ./cmd/send.go ./cmd/send.go
+ADD ./cmd/server.go ./cmd/server.go
+ADD ./cmd/user.go ./cmd/user.go
 ADD ./mails ./mails
+ADD ./main.go ./main.go
 ADD ./reader ./reader
 ADD ./utils ./utils
 
