@@ -113,7 +113,7 @@ var userCmd = &cobra.Command{
 	Short: "user info",
 	Long:  `Import user from csv`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("user called")
+		cmd.Help()
 	},
 }
 
