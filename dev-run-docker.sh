@@ -6,6 +6,7 @@ docker run -it --rm --link mailbox-mariadb:MARIADB                             \
            -v $(pwd)/mails:/go/src/github.com/toomore/mailbox/mails            \
            -v $(pwd)/reader:/go/src/github.com/toomore/mailbox/reader          \
            -v $(pwd)/utils:/go/src/github.com/toomore/mailbox/utils            \
+           -v $(pwd)/mailbox:/go/src/github.com/toomore/mailbox/mailbox        \
            -p 127.0.0.1:8803:8801                                              \
            -e "mailbox_ses_key=???"                                            \
            -e "mailbox_ses_token=???"                                          \
