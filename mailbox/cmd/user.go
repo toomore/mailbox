@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"text/tabwriter"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -92,20 +93,29 @@ func insertInto(data []user) {
 }
 
 func readUser(group string) {
-	rows, err := conn.Query(`SELECT email,groups,created FROM user where groups=?`, group)
+	rows, err := conn.Query(`SELECT id,email,f_name,l_name,created FROM user WHERE groups=?`, group)
 	defer rows.Close()
 	if err != nil {
-		log.Fatal(">>>>>", err)
+		log.Fatal(err)
 	}
-	var email string
-	var groups string
-	var created time.Time
+	var (
+		id      string
+		email   string
+		fname   string
+		lname   string
+		created time.Time
+	)
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", "id", "email", "fname", "lname", "created")
 	for rows.Next() {
-		if err := rows.Scan(&email, &groups, &created); err != nil {
+		if err := rows.Scan(&id, &email, &fname, &lname, &created); err != nil {
 			log.Println(err)
+		} else {
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", id, email, fname, lname, created)
 		}
-		log.Println(email, groups, created)
 	}
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", "id", "email", "fname", "lname", "created")
+	w.Flush()
 }
 
 var userCmd = &cobra.Command{
