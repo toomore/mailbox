@@ -21,6 +21,7 @@
 package cmd
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/url"
@@ -78,6 +79,44 @@ func makeHash(cid, uid *string) {
 	log.Printf("https://%s/read/%x?%s\n", os.Getenv("mailbox_web_site"), campaign.MakeMac(*cid, data), data.Encode())
 }
 
+func openGroups(cid string, groups string) {
+	rows, err := conn.Query(`
+	SELECT id,email,f_name,reader.created
+	FROM user
+	LEFT JOIN reader ON (id=reader.uid AND reader.cid=?)
+	WHERE groups=?
+	GROUP BY id;`, cid, groups)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var (
+		id        string
+		email     string
+		fname     string
+		created   sql.NullString
+		nums      int
+		openCount int
+	)
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", "id*", "email", "f_name", "open")
+	for rows.Next() {
+		if err := rows.Scan(&id, &email, &fname, &created); err != nil {
+			log.Println("[err]", err)
+		} else {
+			nums++
+			if created.Valid {
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", id, email, fname, created.String)
+				openCount++
+			} else {
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", id, email, fname, "Not open")
+			}
+		}
+	}
+	fmt.Fprintf(w, "%s\t%s\t%s\t%.2f%%\n", "", "", "", float64(openCount)/float64(nums)*100)
+	w.Flush()
+}
+
 // campaignCmd represents the campaign command
 var campaignCmd = &cobra.Command{
 	Use:   "campaign",
@@ -113,9 +152,26 @@ var hashCmd = &cobra.Command{
 	Long:  `hash cid, uid`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if *campaignCID == "" || *campaignUID == "" {
+			cmd.Help()
 			log.Fatal("Vars lost `uid`, `cid`")
 		}
 		makeHash(campaignCID, campaignUID)
+	},
+}
+
+var openCmd = &cobra.Command{
+	Use:   "open [group] [cid ...]",
+	Short: "campaign open by group by cid",
+	Long:  `campaign open by group by cid`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) < 2 {
+			cmd.Help()
+			log.Fatal("Lost data")
+		}
+		for _, cid := range args[1:] {
+			fmt.Printf("----- %s -----\n", cid)
+			openGroups(cid, args[0])
+		}
 	},
 }
 
@@ -124,5 +180,5 @@ func init() {
 	campaignUID = hashCmd.Flags().String("uid", "", "user ID")
 
 	RootCmd.AddCommand(campaignCmd)
-	campaignCmd.AddCommand(createCmd, listCmd, hashCmd)
+	campaignCmd.AddCommand(createCmd, listCmd, hashCmd, openCmd)
 }
