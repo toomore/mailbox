@@ -117,6 +117,41 @@ func openGroups(cid string, groups string) {
 	w.Flush()
 }
 
+func openCount(cid string, groups string) {
+	rows, err := conn.Query(`
+	SELECT uid,u.email,count(*) AS count, min(reader.created) as open, max(reader.created) as latest
+	FROM reader, user AS u
+	WHERE uid=u.id AND cid=? AND u.groups=?
+	GROUP BY uid
+	ORDER BY count DESC`, cid, groups)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var (
+		count  int
+		email  string
+		nums   int
+		fopen  string
+		latest string
+		sum    int
+		uid    string
+	)
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", "uid", "email", "count*", "open", "latest")
+	for rows.Next() {
+		if err := rows.Scan(&uid, &email, &count, &fopen, &latest); err != nil {
+			log.Println("[err]", err)
+		} else {
+			sum += count
+			nums++
+			fmt.Fprintf(w, "%s\t%s\t%d\t%s\t%s\n", uid, email, count, fopen, latest)
+		}
+	}
+	fmt.Fprintf(w, "%d\t%.02f%%\t%d\n", nums, float64(sum)/float64(nums)*100, sum)
+	w.Flush()
+}
+
 // campaignCmd represents the campaign command
 var campaignCmd = &cobra.Command{
 	Use:   "campaign",
@@ -175,10 +210,26 @@ var openCmd = &cobra.Command{
 	},
 }
 
+var opencountCmd = &cobra.Command{
+	Use:   "opencount [group] [cid ...]",
+	Short: "count campaign open and list first/latest open by group by cid",
+	Long:  `count campaign open and list first/latest open by group by cid`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) < 2 {
+			cmd.Help()
+			log.Fatal("Lost data")
+		}
+		for _, cid := range args[1:] {
+			fmt.Printf("----- %s -----\n", cid)
+			openCount(cid, args[0])
+		}
+	},
+}
+
 func init() {
 	campaignCID = hashCmd.Flags().String("cid", "", "campaign ID")
 	campaignUID = hashCmd.Flags().String("uid", "", "user ID")
 
 	RootCmd.AddCommand(campaignCmd)
-	campaignCmd.AddCommand(createCmd, listCmd, hashCmd, openCmd)
+	campaignCmd.AddCommand(createCmd, listCmd, hashCmd, openCmd, opencountCmd)
 }
