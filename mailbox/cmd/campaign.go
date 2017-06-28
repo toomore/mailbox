@@ -152,6 +152,42 @@ func openCount(cid string, groups string) {
 	w.Flush()
 }
 
+func openHistory(cid string, groups string) {
+	rows, err := conn.Query(`
+	SELECT no,uid,u.email,u.f_name,reader.created,ip,agent
+	FROM reader, user AS u
+	WHERE cid=? AND uid=u.id AND u.groups=?
+	ORDER BY reader.created ASC;
+	`, cid, groups)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var (
+		no      string
+		uid     string
+		email   string
+		fname   string
+		created time.Time
+		ip      string
+		agent   string
+		count   int
+	)
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "no", "uid", "email", "fname", "created*", "ip", "agent")
+	for rows.Next() {
+		if err := rows.Scan(&no, &uid, &email, &fname, &created, &ip, &agent); err != nil {
+			log.Println("[err]", err)
+		} else {
+			count++
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", no, uid, email, fname, created, ip, agent)
+		}
+	}
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "no", "uid", "email", "fname", "created*", "ip", "agent")
+	w.Flush()
+	fmt.Printf("Count: %d\n", count)
+}
+
 // campaignCmd represents the campaign command
 var campaignCmd = &cobra.Command{
 	Use:   "campaign",
@@ -226,10 +262,26 @@ var opencountCmd = &cobra.Command{
 	},
 }
 
+var openhistoryCmd = &cobra.Command{
+	Use:   "openhistory [group] [cid ...]",
+	Short: "campaign open history by group by cid",
+	Long:  `campaign open history by group by cid`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) < 2 {
+			cmd.Help()
+			log.Fatal("Lost data")
+		}
+		for _, cid := range args[1:] {
+			fmt.Printf("----- %s -----\n", cid)
+			openHistory(cid, args[0])
+		}
+	},
+}
+
 func init() {
 	campaignCID = hashCmd.Flags().String("cid", "", "campaign ID")
 	campaignUID = hashCmd.Flags().String("uid", "", "user ID")
 
 	RootCmd.AddCommand(campaignCmd)
-	campaignCmd.AddCommand(createCmd, listCmd, hashCmd, openCmd, opencountCmd)
+	campaignCmd.AddCommand(createCmd, listCmd, hashCmd, openCmd, opencountCmd, openhistoryCmd)
 }
