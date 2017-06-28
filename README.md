@@ -6,10 +6,10 @@ Mailbox  [![GitHub release](https://img.shields.io/github/release/toomore/mailbo
 
 Cmd
 ----
-1. `mailbox_campaign`：建立 `campaign`，包含產生該 `campaign` 的亂數種子。
-2. `mailbox_import_csv`：匯入訂閱者的資訊。
-3. `mailbox_sender`：發送電子報，以 **HTML** 格式發送。
-4. `mailbox_server`：接收開信訊息。
+1. `mailbox campaign`：建立 `campaign`，包含產生該 `campaign` 的亂數種子。
+2. `mailbox user`：匯入訂閱者的資訊。
+3. `mailbox send`：發送電子報，以 **HTML** 格式發送。
+4. `mailbox server`：接收開信訊息。
 
 相關的操作請參考 `-h` 的說明，但可能什麼都沒說 XD
 
@@ -23,7 +23,7 @@ Docker
 ### `toomore/mailbox:cmd`
 只將編譯過的 `cmd` 程式放入。
 
-    cd ./cmd ; sh ./make.sh;
+    sh ./build-min.sh;
 
 Required
 ---------
@@ -48,9 +48,9 @@ Import User data from csv
 --------------------------
 匯入訂閱者資訊與建立 csv 檔案，檔案內需包含 `email`, `groups`, `f_name`, `l_name` 欄位。
 
-    mailbox_import_csv -p ./list.csv
+    mailbox user import ./list.csv
 
 可以使用 `-d` 來預覽資料讀取狀況
 
-    mailbox_import_csv -p ./list.csv -d
+    mailbox user import ./list.csv -d
     ...
