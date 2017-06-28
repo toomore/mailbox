@@ -46,6 +46,9 @@ func GetSeed(campaignID string) string {
 	for rows.Next() {
 		rows.Scan(&seed)
 	}
+	if seed == "" {
+		log.Fatalln("Find no campaign ID")
+	}
 	cacheSeed[campaignID] = seed
 	return seed
 }

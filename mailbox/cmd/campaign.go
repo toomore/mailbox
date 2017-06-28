@@ -23,9 +23,19 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"net/url"
+	"os"
+	"text/tabwriter"
+	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/toomore/mailbox/campaign"
 	"github.com/toomore/mailbox/utils"
+)
+
+var (
+	campaignUID *string
+	campaignCID *string
 )
 
 func create() ([8]byte, [8]byte) {
@@ -35,6 +45,37 @@ func create() ([8]byte, [8]byte) {
 		log.Fatal(err)
 	}
 	return id, seed
+}
+
+func list() {
+	rows, err := conn.Query(`SELECT id,seed,created,updated FROM campaign ORDER BY updated DESC`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var (
+		id      string
+		seed    string
+		created time.Time
+		updated time.Time
+	)
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", "id", "seed", "created", "updated*")
+	for rows.Next() {
+		if err := rows.Scan(&id, &seed, &created, &updated); err != nil {
+			log.Println("[err]", err)
+		} else {
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", id, seed, created, updated)
+		}
+	}
+	w.Flush()
+}
+
+func makeHash(cid, uid *string) {
+	data := url.Values{}
+	data.Add("c", *cid)
+	data.Add("u", *uid)
+	log.Printf("https://%s/read/%x?%s\n", os.Getenv("mailbox_web_site"), campaign.MakeMac(*cid, data), data.Encode())
 }
 
 // campaignCmd represents the campaign command
@@ -57,17 +98,31 @@ var createCmd = &cobra.Command{
 	},
 }
 
+var listCmd = &cobra.Command{
+	Use:   "list",
+	Short: "list campaign",
+	Long:  `list campaign`,
+	Run: func(cmd *cobra.Command, args []string) {
+		list()
+	},
+}
+
+var hashCmd = &cobra.Command{
+	Use:   "hash",
+	Short: "hash cid, uid",
+	Long:  `hash cid, uid`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if *campaignCID == "" || *campaignUID == "" {
+			log.Fatal("Vars lost `uid`, `cid`")
+		}
+		makeHash(campaignCID, campaignUID)
+	},
+}
+
 func init() {
+	campaignCID = hashCmd.Flags().String("cid", "", "campaign ID")
+	campaignUID = hashCmd.Flags().String("uid", "", "user ID")
+
 	RootCmd.AddCommand(campaignCmd)
-	campaignCmd.AddCommand(createCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// campaignCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// campaignCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	campaignCmd.AddCommand(createCmd, listCmd, hashCmd)
 }
