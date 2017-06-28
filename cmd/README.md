@@ -21,7 +21,7 @@ CMD
 ### `mailbox server`
 接收開信訊息。
 
-**Docs:** https://godoc.org/github.com/toomore/mailbox/cmd/
+**Docs:** [cmd/mailbox](cmd/mailbox.md)
 
 Docker
 -------

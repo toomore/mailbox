@@ -1,11 +1,11 @@
 ## mailbox send
 
-send paper
+Send paper
 
 ### Synopsis
 
 
-send paper
+Send paper
 
 ```
 mailbox send [flags]

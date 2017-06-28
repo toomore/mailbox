@@ -1,11 +1,11 @@
 ## mailbox user
 
-user info
+User info
 
 ### Synopsis
 
 
-Import user from csv
+User info
 
 ```
 mailbox user [flags]

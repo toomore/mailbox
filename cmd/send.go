@@ -46,8 +46,8 @@ var (
 // sendCmd represents the send command
 var sendCmd = &cobra.Command{
 	Use:   "send",
-	Short: "send paper",
-	Long:  `send paper`,
+	Short: "Send paper",
+	Long:  `Send paper`,
 	Run: func(cmd *cobra.Command, args []string) {
 		file, err := os.Open(*sendPath)
 		if err != nil {

@@ -120,8 +120,8 @@ func readUser(group string) {
 
 var userCmd = &cobra.Command{
 	Use:   "user",
-	Short: "user info",
-	Long:  `Import user from csv`,
+	Short: "User info",
+	Long:  `User info`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},

@@ -191,8 +191,8 @@ func openHistory(cid string, groups string) {
 // campaignCmd represents the campaign command
 var campaignCmd = &cobra.Command{
 	Use:   "campaign",
-	Short: "campaign operator",
-	Long:  `campaign operator`,
+	Short: "Campaign operator",
+	Long:  `Campaign operator`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
@@ -200,8 +200,8 @@ var campaignCmd = &cobra.Command{
 
 var createCmd = &cobra.Command{
 	Use:   "create",
-	Short: "create a campaign",
-	Long:  `create a campaign`,
+	Short: "Create a campaign",
+	Long:  `Create a campaign`,
 	Run: func(cmd *cobra.Command, args []string) {
 		id, seed := create()
 		log.Printf("id: %s, seed: %s", id, seed)
@@ -210,8 +210,8 @@ var createCmd = &cobra.Command{
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "list campaign",
-	Long:  `list campaign`,
+	Short: "List campaign",
+	Long:  `List campaign`,
 	Run: func(cmd *cobra.Command, args []string) {
 		list()
 	},
@@ -219,8 +219,8 @@ var listCmd = &cobra.Command{
 
 var hashCmd = &cobra.Command{
 	Use:   "hash",
-	Short: "hash cid, uid",
-	Long:  `hash cid, uid`,
+	Short: "Hash cid, uid",
+	Long:  `Hash cid, uid`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if *campaignCID == "" || *campaignUID == "" {
 			cmd.Help()
@@ -232,8 +232,8 @@ var hashCmd = &cobra.Command{
 
 var openCmd = &cobra.Command{
 	Use:   "open [group] [cid ...]",
-	Short: "campaign open by group by cid",
-	Long:  `campaign open by group by cid`,
+	Short: "Campaign open by group by cid",
+	Long:  `Campaign open by group by cid`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			cmd.Help()
@@ -248,8 +248,8 @@ var openCmd = &cobra.Command{
 
 var opencountCmd = &cobra.Command{
 	Use:   "opencount [group] [cid ...]",
-	Short: "count campaign open and list first/latest open by group by cid",
-	Long:  `count campaign open and list first/latest open by group by cid`,
+	Short: "Count campaign open and list first/latest open by group by cid",
+	Long:  `Count campaign open and list first/latest open by group by cid`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			cmd.Help()
@@ -264,8 +264,8 @@ var opencountCmd = &cobra.Command{
 
 var openhistoryCmd = &cobra.Command{
 	Use:   "openhistory [group] [cid ...]",
-	Short: "campaign open history by group by cid",
-	Long:  `campaign open history by group by cid`,
+	Short: "Campaign open history by group by cid",
+	Long:  `Campaign open history by group by cid`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			cmd.Help()
