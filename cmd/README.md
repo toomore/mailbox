@@ -21,7 +21,7 @@ CMD
 ### `mailbox server`
 接收開信訊息。
 
-**Docs:** [cmd/mailbox](cmd/mailbox.md)
+**Docs:** [docs/mailbox](docs/mailbox.md)
 
 Docker
 -------

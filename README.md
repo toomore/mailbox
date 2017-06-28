@@ -11,7 +11,7 @@ Cmd
 3. `mailbox send`：發送電子報，以 **HTML** 格式發送。
 4. `mailbox server`：接收開信訊息。
 
-相關的操作請參考 `-h` 的說明，但可能什麼都沒說 XD
+相關的操作請參考 `-h` 的說明，或 [cmd/docs](cmd/docs/mailbox.md)
 
 Docker
 -------
