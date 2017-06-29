@@ -62,7 +62,7 @@ start_mariadb_client:
 run_cmd:
 		-docker run -it --rm                                                   \
 					--link mailbox-mariadb-prod:MARIADB                        \
-					-v $(shell pwd)/csv:/csv                                   \
+					-v $(shell pwd)/workdir:/workdir                           \
 					-e "mailbox_ses_key=???"                                   \
 					-e "mailbox_ses_token=???"                                 \
 					-e "mailbox_ses_sender=???"                                \

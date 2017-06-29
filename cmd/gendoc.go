@@ -25,16 +25,25 @@ import (
 	"github.com/spf13/cobra/doc"
 )
 
+var genbash *bool
+
 // gendocCmd represents the gendoc command
 var gendocCmd = &cobra.Command{
 	Use:   "doc",
 	Short: "Gen docs md",
 	Run: func(cmd *cobra.Command, args []string) {
-		doc.GenMarkdownTree(RootCmd, "./")
+		if *genbash {
+			RootCmd.GenBashCompletionFile("./mailbox")
+			cmd.Println("Gen Bash Completion File ...")
+		} else {
+			doc.GenMarkdownTree(RootCmd, "./")
+			cmd.Println("Gen Markdown Tree ...")
+		}
 	},
 	Hidden: true,
 }
 
 func init() {
+	genbash = gendocCmd.Flags().BoolP("genbash", "b", false, "Gen bash completion")
 	RootCmd.AddCommand(gendocCmd)
 }

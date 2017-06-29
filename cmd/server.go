@@ -104,7 +104,7 @@ var serverCmd = &cobra.Command{
 	Short: "Run tiny server for open, click trace",
 	Long:  `Run tiny server for open, click trace`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("server called")
+		fmt.Println("Run server ...")
 		http.HandleFunc("/read/", read)
 		http.HandleFunc("/door/", door)
 		log.Println("HTTP Port:", *serverhttpPort)

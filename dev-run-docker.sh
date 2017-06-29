@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 docker run -it --rm --link mailbox-mariadb:MARIADB                             \
-           -v $(pwd)/csv:/csv                                                  \
+           -v $(pwd)/workdir:/workdir                                          \
            -v $(pwd)/campaign:/go/src/github.com/toomore/mailbox/campaign      \
            -v $(pwd)/cmd:/go/src/github.com/toomore/mailbox/cmd                \
            -v $(pwd)/mails:/go/src/github.com/toomore/mailbox/mails            \
