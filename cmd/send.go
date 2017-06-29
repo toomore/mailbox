@@ -41,6 +41,7 @@ var (
 	sendPath        *string
 	sendReplaceLink *bool
 	sendSubject     *string
+	sendConn        *sql.DB
 )
 
 // sendCmd represents the send command
@@ -48,6 +49,9 @@ var sendCmd = &cobra.Command{
 	Use:   "send",
 	Short: "Send paper",
 	Long:  `Send paper`,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		sendConn = utils.GetConn()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		file, err := os.Open(*sendPath)
 		if err != nil {
@@ -63,9 +67,9 @@ var sendCmd = &cobra.Command{
 			for i, v := range uids {
 				uids[i] = fmt.Sprintf("'%s'", v)
 			}
-			rows, err = utils.GetConn().Query(fmt.Sprintf(`SELECT id,email,f_name,l_name FROM user WHERE alive=1 AND id IN (%s)`, strings.Join(uids, ",")))
+			rows, err = sendConn.Query(fmt.Sprintf(`SELECT id,email,f_name,l_name FROM user WHERE alive=1 AND id IN (%s)`, strings.Join(uids, ",")))
 		} else {
-			rows, err = utils.GetConn().Query(`SELECT id,email,f_name,l_name FROM user WHERE alive=1 AND groups=?`, *sendGroups)
+			rows, err = sendConn.Query(`SELECT id,email,f_name,l_name FROM user WHERE alive=1 AND groups=?`, *sendGroups)
 		}
 		defer rows.Close()
 		if err != nil {

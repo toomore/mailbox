@@ -79,7 +79,6 @@ func readCSV(path string) []user {
 }
 
 func insertInto(data []user) {
-	userConn = utils.GetConn()
 	stmt, err := userConn.Prepare(`INSERT INTO user(email,groups,f_name,l_name)
 	                           VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE f_name=?, l_name=?`)
 	if err != nil {
@@ -97,7 +96,6 @@ func insertInto(data []user) {
 }
 
 func readUser(group string) {
-	userConn = utils.GetConn()
 	rows, err := userConn.Query(`SELECT id,email,f_name,l_name,created FROM user WHERE groups=?`, group)
 	defer rows.Close()
 	if err != nil {
@@ -136,6 +134,9 @@ var importCmd = &cobra.Command{
 	Use:   "import [csv path ...]",
 	Short: "Import user from csv",
 	Long:  "Import user data from csv file",
+	PreRun: func(cmd *cobra.Command, args []string) {
+		userConn = utils.GetConn()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		for n, path := range args {
 			log.Printf(">>> Read csv[%d]: `%s`", n, path)
@@ -155,6 +156,9 @@ var showCmd = &cobra.Command{
 	Use:   "show [groups ...]",
 	Short: "Show users",
 	Long:  "Show all/group users",
+	PreRun: func(cmd *cobra.Command, args []string) {
+		userConn = utils.GetConn()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Help()

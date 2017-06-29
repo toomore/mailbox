@@ -14,6 +14,7 @@
 package cmd
 
 import (
+	"database/sql"
 	"encoding/hex"
 	"fmt"
 	"log"
@@ -31,6 +32,7 @@ var (
 	servercExpr      = regexp.MustCompile(`/(read|door)/([0-9a-z]+)`)
 	serverhttpPort   *string
 	serverlinksCache = make(map[string]string)
+	serverConn       *sql.DB
 )
 
 func serverLog(note string, r *http.Request) {
@@ -70,7 +72,7 @@ func door(w http.ResponseWriter, r *http.Request) {
 
 	hmbyte, _ := hex.DecodeString(hm)
 	if campaign.CheckMac(hmbyte, v.Get("c"), v) {
-		utils.GetConn().Query(`INSERT INTO doors(cid,uid,linkid,ip,agent) VALUES(?,?,?,?,?)`,
+		serverConn.Query(`INSERT INTO doors(cid,uid,linkid,ip,agent) VALUES(?,?,?,?,?)`,
 			v.Get("c"), v.Get("u"), v.Get("l"), r.Header.Get("X-Real-Ip"), r.Header.Get("User-Agent"))
 		serverLog("[door] Pass", r)
 
@@ -81,7 +83,7 @@ func door(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		rows, err := utils.GetConn().Query(`SELECT url FROM links WHERE cid=? AND id=?`, v.Get("c"), v.Get("l"))
+		rows, err := serverConn.Query(`SELECT url FROM links WHERE cid=? AND id=?`, v.Get("c"), v.Get("l"))
 		if err == nil {
 			for rows.Next() {
 				var url string
@@ -103,6 +105,9 @@ var serverCmd = &cobra.Command{
 	Use:   "server",
 	Short: "Run tiny server for open, click trace",
 	Long:  `Run tiny server for open, click trace`,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		serverConn = utils.GetConn()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Run server ...")
 		http.HandleFunc("/read/", read)

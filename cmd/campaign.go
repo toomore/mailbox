@@ -42,7 +42,6 @@ var (
 
 func create() ([8]byte, [8]byte) {
 	id, seed := utils.GenSeed(), utils.GenSeed()
-	campaignConn = utils.GetConn()
 	_, err := campaignConn.Query(fmt.Sprintf(`INSERT INTO campaign(id,seed) VALUES('%s', '%s')`, id, seed))
 	if err != nil {
 		log.Fatal(err)
@@ -51,7 +50,6 @@ func create() ([8]byte, [8]byte) {
 }
 
 func list() {
-	campaignConn = utils.GetConn()
 	rows, err := campaignConn.Query(`SELECT id,seed,created,updated FROM campaign ORDER BY updated DESC`)
 	if err != nil {
 		log.Fatal(err)
@@ -83,7 +81,6 @@ func makeHash(cid, uid *string) {
 }
 
 func openGroups(cid string, groups string) {
-	campaignConn = utils.GetConn()
 	rows, err := campaignConn.Query(`
 	SELECT id,email,f_name,reader.created
 	FROM user
@@ -122,7 +119,6 @@ func openGroups(cid string, groups string) {
 }
 
 func openCount(cid string, groups string) {
-	campaignConn = utils.GetConn()
 	rows, err := campaignConn.Query(`
 	SELECT uid,u.email,count(*) AS count, min(reader.created) as open, max(reader.created) as latest
 	FROM reader, user AS u
@@ -158,7 +154,6 @@ func openCount(cid string, groups string) {
 }
 
 func openHistory(cid string, groups string) {
-	campaignConn = utils.GetConn()
 	rows, err := campaignConn.Query(`
 	SELECT no,uid,u.email,u.f_name,reader.created,ip,agent
 	FROM reader, user AS u
@@ -208,6 +203,9 @@ var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a campaign",
 	Long:  `Create a campaign`,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		campaignConn = utils.GetConn()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		id, seed := create()
 		log.Printf("id: %s, seed: %s", id, seed)
@@ -218,6 +216,9 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List campaign",
 	Long:  `List campaign`,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		campaignConn = utils.GetConn()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		list()
 	},
@@ -240,6 +241,9 @@ var openCmd = &cobra.Command{
 	Use:   "open [group] [cid ...]",
 	Short: "Campaign open by group by cid",
 	Long:  `Campaign open by group by cid`,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		campaignConn = utils.GetConn()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			cmd.Help()
@@ -256,6 +260,9 @@ var opencountCmd = &cobra.Command{
 	Use:   "opencount [group] [cid ...]",
 	Short: "Count campaign open and list first/latest open by group by cid",
 	Long:  `Count campaign open and list first/latest open by group by cid`,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		campaignConn = utils.GetConn()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			cmd.Help()
@@ -272,6 +279,9 @@ var openhistoryCmd = &cobra.Command{
 	Use:   "openhistory [group] [cid ...]",
 	Short: "Campaign open history by group by cid",
 	Long:  `Campaign open history by group by cid`,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		campaignConn = utils.GetConn()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			cmd.Help()
