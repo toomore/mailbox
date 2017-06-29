@@ -104,7 +104,7 @@ func door(w http.ResponseWriter, r *http.Request) {
 var serverCmd = &cobra.Command{
 	Use:   "server",
 	Short: "Run tiny server for open, click trace",
-	Long:  `Run tiny server for open, click trace`,
+	Long:  `啟動一個 web server，來接收開信、點擊連結紀錄。`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		serverConn = utils.GetConn()
 	},

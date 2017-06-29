@@ -193,7 +193,7 @@ func openHistory(cid string, groups string) {
 var campaignCmd = &cobra.Command{
 	Use:   "campaign",
 	Short: "Campaign operator",
-	Long:  `Campaign operator`,
+	Long:  `相關 campaign 的操作`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		campaignConn = utils.GetConn()
 	},
@@ -205,7 +205,7 @@ var campaignCmd = &cobra.Command{
 var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a campaign",
-	Long:  `Create a campaign`,
+	Long:  `新增一個 campaign 序號與加密種子，加密種子會在每次寄送電子報時使用。`,
 	Run: func(cmd *cobra.Command, args []string) {
 		id, seed := create()
 		log.Printf("id: %s, seed: %s", id, seed)
@@ -215,7 +215,7 @@ var createCmd = &cobra.Command{
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List campaign",
-	Long:  `List campaign`,
+	Long:  `列出所有 campaign 資訊`,
 	Run: func(cmd *cobra.Command, args []string) {
 		list()
 	},
@@ -224,7 +224,7 @@ var listCmd = &cobra.Command{
 var hashCmd = &cobra.Command{
 	Use:   "hash",
 	Short: "Hash cid, uid",
-	Long:  `Hash cid, uid`,
+	Long:  `產生一組開信追蹤連結，需要 cid, uid`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if *campaignCID == "" || *campaignUID == "" {
 			cmd.Help()
@@ -237,7 +237,7 @@ var hashCmd = &cobra.Command{
 var openCmd = &cobra.Command{
 	Use:   "open [group] [cid ...]",
 	Short: "Campaign open by group by cid",
-	Long:  `Campaign open by group by cid`,
+	Long:  `依群組名單列出 campaign 的開信狀況，支援多組 cid 依序列出`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			cmd.Help()
@@ -253,7 +253,7 @@ var openCmd = &cobra.Command{
 var opencountCmd = &cobra.Command{
 	Use:   "opencount [group] [cid ...]",
 	Short: "Count campaign open and list first/latest open by group by cid",
-	Long:  `Count campaign open and list first/latest open by group by cid`,
+	Long:  `依群組名單統計開信次數、首次、最近的開信時間。支援多組 cid 依序列出。`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			cmd.Help()
@@ -269,7 +269,7 @@ var opencountCmd = &cobra.Command{
 var openhistoryCmd = &cobra.Command{
 	Use:   "openhistory [group] [cid ...]",
 	Short: "Campaign open history by group by cid",
-	Long:  `Campaign open history by group by cid`,
+	Long:  `依群組名單列出所有的開信紀錄，支援多組 cid 依序列出。`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			cmd.Help()

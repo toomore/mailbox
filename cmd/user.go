@@ -124,7 +124,7 @@ func readUser(group string) {
 var userCmd = &cobra.Command{
 	Use:   "user",
 	Short: "User info",
-	Long:  `User info`,
+	Long:  `相關 user 的操作`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
@@ -133,7 +133,8 @@ var userCmd = &cobra.Command{
 var importCmd = &cobra.Command{
 	Use:   "import [csv path ...]",
 	Short: "Import user from csv",
-	Long:  "Import user data from csv file",
+	Long: `匯入使用者資訊，CSV 檔案需要 email, groups, f_name, l_name 欄位， 支援
+多檔案匯入。`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		userConn = utils.GetConn()
 	},
@@ -155,7 +156,7 @@ var importCmd = &cobra.Command{
 var showCmd = &cobra.Command{
 	Use:   "show [groups ...]",
 	Short: "Show users",
-	Long:  "Show all/group users",
+	Long:  "列出群組使用者名單。",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		userConn = utils.GetConn()
 	},

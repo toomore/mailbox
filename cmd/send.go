@@ -48,7 +48,9 @@ var (
 var sendCmd = &cobra.Command{
 	Use:   "send",
 	Short: "Send paper",
-	Long:  `Send paper`,
+	Long:  `寄送電子報，處理開信連結與替換點擊連結。`,
+	Example: `群組寄送：mailbox send -p {path} -s 'Title: #1' -g {group} --cid {cid}
+個人寄送：mailbox send -p {path} -s 'Title: #1' --uid='6,12' --cid {cid}`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		sendConn = utils.GetConn()
 	},
