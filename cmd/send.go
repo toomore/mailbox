@@ -49,7 +49,7 @@ var sendCmd = &cobra.Command{
 	Use:   "send",
 	Short: "Send paper",
 	Long:  `Send paper`,
-	PreRun: func(cmd *cobra.Command, args []string) {
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		sendConn = utils.GetConn()
 	},
 	Run: func(cmd *cobra.Command, args []string) {

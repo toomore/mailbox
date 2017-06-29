@@ -194,6 +194,9 @@ var campaignCmd = &cobra.Command{
 	Use:   "campaign",
 	Short: "Campaign operator",
 	Long:  `Campaign operator`,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		campaignConn = utils.GetConn()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
@@ -203,9 +206,6 @@ var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a campaign",
 	Long:  `Create a campaign`,
-	PreRun: func(cmd *cobra.Command, args []string) {
-		campaignConn = utils.GetConn()
-	},
 	Run: func(cmd *cobra.Command, args []string) {
 		id, seed := create()
 		log.Printf("id: %s, seed: %s", id, seed)
@@ -216,9 +216,6 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List campaign",
 	Long:  `List campaign`,
-	PreRun: func(cmd *cobra.Command, args []string) {
-		campaignConn = utils.GetConn()
-	},
 	Run: func(cmd *cobra.Command, args []string) {
 		list()
 	},
@@ -241,9 +238,6 @@ var openCmd = &cobra.Command{
 	Use:   "open [group] [cid ...]",
 	Short: "Campaign open by group by cid",
 	Long:  `Campaign open by group by cid`,
-	PreRun: func(cmd *cobra.Command, args []string) {
-		campaignConn = utils.GetConn()
-	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			cmd.Help()
@@ -260,9 +254,6 @@ var opencountCmd = &cobra.Command{
 	Use:   "opencount [group] [cid ...]",
 	Short: "Count campaign open and list first/latest open by group by cid",
 	Long:  `Count campaign open and list first/latest open by group by cid`,
-	PreRun: func(cmd *cobra.Command, args []string) {
-		campaignConn = utils.GetConn()
-	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			cmd.Help()
@@ -279,9 +270,6 @@ var openhistoryCmd = &cobra.Command{
 	Use:   "openhistory [group] [cid ...]",
 	Short: "Campaign open history by group by cid",
 	Long:  `Campaign open history by group by cid`,
-	PreRun: func(cmd *cobra.Command, args []string) {
-		campaignConn = utils.GetConn()
-	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			cmd.Help()

@@ -105,7 +105,7 @@ var serverCmd = &cobra.Command{
 	Use:   "server",
 	Short: "Run tiny server for open, click trace",
 	Long:  `Run tiny server for open, click trace`,
-	PreRun: func(cmd *cobra.Command, args []string) {
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		serverConn = utils.GetConn()
 	},
 	Run: func(cmd *cobra.Command, args []string) {

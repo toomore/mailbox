@@ -134,7 +134,7 @@ var importCmd = &cobra.Command{
 	Use:   "import [csv path ...]",
 	Short: "Import user from csv",
 	Long:  "Import user data from csv file",
-	PreRun: func(cmd *cobra.Command, args []string) {
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		userConn = utils.GetConn()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -156,7 +156,7 @@ var showCmd = &cobra.Command{
 	Use:   "show [groups ...]",
 	Short: "Show users",
 	Long:  "Show all/group users",
-	PreRun: func(cmd *cobra.Command, args []string) {
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		userConn = utils.GetConn()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
