@@ -34,8 +34,8 @@ import (
 )
 
 var (
-	dryRun   *bool
-	userConn *sql.DB
+	userDryRun *bool
+	userConn   *sql.DB
 )
 
 type user struct {
@@ -141,7 +141,7 @@ var importCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		for n, path := range args {
 			log.Printf(">>> Read csv[%d]: `%s`", n, path)
-			if *dryRun {
+			if *userDryRun {
 				log.Println(">>> Dry Run data")
 				for i, v := range readCSV(path) {
 					fmt.Printf("%d %+v\n", i, v)
@@ -173,7 +173,7 @@ var showCmd = &cobra.Command{
 }
 
 func init() {
-	dryRun = importCmd.Flags().BoolP("dryRun", "d", false, "Dry run read csv data")
+	userDryRun = importCmd.Flags().BoolP("dryRun", "d", false, "Dry run read csv data")
 
 	RootCmd.AddCommand(userCmd)
 	userCmd.AddCommand(importCmd, showCmd)
