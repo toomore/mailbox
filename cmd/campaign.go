@@ -35,13 +35,15 @@ import (
 )
 
 var (
-	campaignUID *string
-	campaignCID *string
+	campaignUID  *string
+	campaignCID  *string
+	campaignConn *sql.DB
 )
 
 func create() ([8]byte, [8]byte) {
 	id, seed := utils.GenSeed(), utils.GenSeed()
-	_, err := conn.Query(fmt.Sprintf(`INSERT INTO campaign(id,seed) VALUES('%s', '%s')`, id, seed))
+	campaignConn = utils.GetConn()
+	_, err := campaignConn.Query(fmt.Sprintf(`INSERT INTO campaign(id,seed) VALUES('%s', '%s')`, id, seed))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,7 +51,8 @@ func create() ([8]byte, [8]byte) {
 }
 
 func list() {
-	rows, err := conn.Query(`SELECT id,seed,created,updated FROM campaign ORDER BY updated DESC`)
+	campaignConn = utils.GetConn()
+	rows, err := campaignConn.Query(`SELECT id,seed,created,updated FROM campaign ORDER BY updated DESC`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -80,7 +83,8 @@ func makeHash(cid, uid *string) {
 }
 
 func openGroups(cid string, groups string) {
-	rows, err := conn.Query(`
+	campaignConn = utils.GetConn()
+	rows, err := campaignConn.Query(`
 	SELECT id,email,f_name,reader.created
 	FROM user
 	LEFT JOIN reader ON (id=reader.uid AND reader.cid=?)
@@ -118,7 +122,8 @@ func openGroups(cid string, groups string) {
 }
 
 func openCount(cid string, groups string) {
-	rows, err := conn.Query(`
+	campaignConn = utils.GetConn()
+	rows, err := campaignConn.Query(`
 	SELECT uid,u.email,count(*) AS count, min(reader.created) as open, max(reader.created) as latest
 	FROM reader, user AS u
 	WHERE uid=u.id AND cid=? AND u.groups=?
@@ -153,7 +158,8 @@ func openCount(cid string, groups string) {
 }
 
 func openHistory(cid string, groups string) {
-	rows, err := conn.Query(`
+	campaignConn = utils.GetConn()
+	rows, err := campaignConn.Query(`
 	SELECT no,uid,u.email,u.f_name,reader.created,ip,agent
 	FROM reader, user AS u
 	WHERE cid=? AND uid=u.id AND u.groups=?

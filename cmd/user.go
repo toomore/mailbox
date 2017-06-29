@@ -21,6 +21,7 @@
 package cmd
 
 import (
+	"database/sql"
 	"encoding/csv"
 	"fmt"
 	"log"
@@ -29,10 +30,12 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/toomore/mailbox/utils"
 )
 
 var (
-	dryRun *bool
+	dryRun   *bool
+	userConn *sql.DB
 )
 
 type user struct {
@@ -76,7 +79,8 @@ func readCSV(path string) []user {
 }
 
 func insertInto(data []user) {
-	stmt, err := conn.Prepare(`INSERT INTO user(email,groups,f_name,l_name)
+	userConn = utils.GetConn()
+	stmt, err := userConn.Prepare(`INSERT INTO user(email,groups,f_name,l_name)
 	                           VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE f_name=?, l_name=?`)
 	if err != nil {
 		log.Fatal(err)
@@ -93,7 +97,8 @@ func insertInto(data []user) {
 }
 
 func readUser(group string) {
-	rows, err := conn.Query(`SELECT id,email,f_name,l_name,created FROM user WHERE groups=?`, group)
+	userConn = utils.GetConn()
+	rows, err := userConn.Query(`SELECT id,email,f_name,l_name,created FROM user WHERE groups=?`, group)
 	defer rows.Close()
 	if err != nil {
 		log.Fatal(err)
