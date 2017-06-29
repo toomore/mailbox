@@ -67,4 +67,4 @@ run_cmd:
 					-e "mailbox_ses_token=???"                                 \
 					-e "mailbox_ses_sender=???"                                \
 					-e "mailbox_web_site=???"                                  \
-					toomore/mailbox:cmd sh
+					toomore/mailbox:cmd

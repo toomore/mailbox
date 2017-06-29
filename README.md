@@ -13,8 +13,8 @@ Cmd
 
 相關的操作請參考 `-h` 的說明，或 [cmd/docs](cmd/docs/mailbox.md)
 
-Docker
--------
+Build Docker Image
+-------------------
 ### `toomore/mailbox:base`
 將基本的程式碼放入，相關的套件也一併下載。
 
@@ -43,6 +43,21 @@ Nginx config
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Args $query_string;
     proxy_set_header X-Uri $uri;
+
+Run
+----
+Into container
+
+    make run_cmd
+
+Support bash-completion
+
+    mailbox [tab][tab]
+    campaign  send      server    user
+
+... and pretty help (using [spf13/cobra](https://github.com/spf13/cobra))
+
+    mailbox -h
 
 Import User data from csv
 --------------------------
