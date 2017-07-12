@@ -104,6 +104,7 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 			ReplaceATag(&msg, allATags, cid, seed, no)
 		}
 		ReplaceFname(&msg, fname)
+		ReplaceLname(&msg, lname)
 		ReplaceReader(&msg, cid, seed, no)
 		if dryRun {
 			log.Printf("%s\n", msg)

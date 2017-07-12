@@ -32,6 +32,11 @@ func ReplaceFname(html *[]byte, fname string) {
 	*html = bytes.Replace(*html, []byte("{{FNAME}}"), []byte(fname), -1)
 }
 
+// ReplaceLname is to replace FNAME tag
+func ReplaceLname(html *[]byte, lname string) {
+	*html = bytes.Replace(*html, []byte("{{LNAME}}"), []byte(lname), -1)
+}
+
 // ReplaceATag is to replace HTML a tag
 func ReplaceATag(html *[]byte, allATags []LinksData, cid string, seed string, uid string) {
 	for _, v := range allATags {
