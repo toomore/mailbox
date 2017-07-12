@@ -18,8 +18,6 @@ var svc *ses.SES
 var ql chan struct{}
 
 func init() {
-	ql = make(chan struct{}, 10)
-
 	svc = ses.New(session.Must(session.NewSession(
 		&aws.Config{
 			Region: aws.String("us-east-1"),
@@ -80,8 +78,9 @@ func SendWG(params *ses.SendEmailInput, wg *sync.WaitGroup) {
 }
 
 // ProcessSend is to start send from rows
-func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subject string, dryRun bool) {
+func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subject string, dryRun bool, limit int) {
 	var allATags []LinksData
+
 	if replaceLink {
 		allATags = FilterATags(body, cid)
 	}
@@ -89,6 +88,7 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 	var seed = campaign.GetSeed(cid)
 	var count int
 	var wg sync.WaitGroup
+	ql = make(chan struct{}, limit)
 	for rows.Next() {
 		var (
 			email string

@@ -35,12 +35,13 @@ import (
 
 var (
 	sendCID         *string
-	sendUID         *string
 	sendDryRun      *bool
 	sendGroups      *string
+	sendLimit       *int
 	sendPath        *string
 	sendReplaceLink *bool
 	sendSubject     *string
+	sendUID         *string
 	sendConn        *sql.DB
 )
 
@@ -78,7 +79,7 @@ var sendCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		mails.ProcessSend(body, rows, *sendCID, *sendReplaceLink, *sendSubject, *sendDryRun)
+		mails.ProcessSend(body, rows, *sendCID, *sendReplaceLink, *sendSubject, *sendDryRun, *sendLimit)
 	},
 }
 
@@ -90,6 +91,7 @@ func init() {
 	sendPath = sendCmd.Flags().StringP("path", "p", "", "HTML file path")
 	sendReplaceLink = sendCmd.Flags().Bool("rl", true, "Replace A tag links")
 	sendSubject = sendCmd.Flags().StringP("subject", "s", "", "Mail subject")
+	sendLimit = sendCmd.Flags().IntP("limit", "", 7, "Send concurrency limit")
 
 	RootCmd.AddCommand(sendCmd)
 }
