@@ -101,8 +101,6 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 		ReplaceLname(&msg, lname)
 		if replaceLink {
 			allATags = FilterATags(&msg, cid)
-		}
-		if replaceLink {
 			ReplaceATag(&msg, allATags, cid, seed, no)
 		}
 		ReplaceReader(&msg, cid, seed, no)
