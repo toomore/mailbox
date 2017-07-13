@@ -79,11 +79,6 @@ func SendWG(params *ses.SendEmailInput, wg *sync.WaitGroup) {
 
 // ProcessSend is to start send from rows
 func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subject string, dryRun bool, limit int) {
-	var allATags map[string]LinksData
-
-	if replaceLink {
-		allATags = FilterATags(body, cid)
-	}
 
 	var seed = campaign.GetSeed(cid)
 	var count int
@@ -91,23 +86,33 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 	ql = make(chan struct{}, limit)
 	for rows.Next() {
 		var (
-			email string
-			fname string
-			lname string
-			msg   []byte
-			no    string
+			allATags map[string]LinksData
+			email    string
+			fname    string
+			lname    string
+			msg      []byte
+			no       string
 		)
+
 		rows.Scan(&no, &email, &fname, &lname)
 
 		msg = body
 		ReplaceFname(&msg, fname)
 		ReplaceLname(&msg, lname)
 		if replaceLink {
+			allATags = FilterATags(&msg, cid)
+		}
+		if replaceLink {
 			ReplaceATag(&msg, allATags, cid, seed, no)
 		}
 		ReplaceReader(&msg, cid, seed, no)
 		if dryRun {
 			log.Printf("%s\n", msg)
+			var n int
+			for _, v := range allATags {
+				n++
+				fmt.Printf("%02d => [%s] %s\n", n, v.LinkID, v.URL)
+			}
 		} else {
 			wg.Add(1)
 			ql <- struct{}{}
@@ -119,12 +124,5 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 		count++
 	}
 	wg.Wait()
-	if dryRun {
-		var n int
-		for _, v := range allATags {
-			n++
-			fmt.Printf("%02d => [%s] %s\n", n, v.LinkID, v.URL)
-		}
-	}
 	log.Printf("\n  cid: %s, count: %d\n  Subject: `%s`\n", cid, count, subject)
 }

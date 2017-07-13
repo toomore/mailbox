@@ -13,7 +13,7 @@ import (
 	"github.com/toomore/mailbox/utils"
 )
 
-var areg = regexp.MustCompile(`href="(http[s]?://[a-zA-z0-9/\.:?=,-@%()_&]+)"`)
+var areg = regexp.MustCompile(`href="(http[s]?://[a-zA-z0-9/\.:?=,-@%()_&\+]+)"`)
 
 // ReplaceReader is to replace reader open mail link
 func ReplaceReader(html *[]byte, cid string, seed string, uid string) {
@@ -62,8 +62,8 @@ type LinksData struct {
 }
 
 // FilterATags is to filter, find all a tag data
-func FilterATags(body []byte, cid string) map[string]LinksData {
-	allATags := areg.FindAllSubmatch(body, -1)
+func FilterATags(body *[]byte, cid string) map[string]LinksData {
+	allATags := areg.FindAllSubmatch(*body, -1)
 	result := make(map[string]LinksData)
 	var wg sync.WaitGroup
 	wg.Add(len(allATags))
