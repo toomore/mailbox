@@ -100,11 +100,11 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 		rows.Scan(&no, &email, &fname, &lname)
 
 		msg = body
+		ReplaceFname(&msg, fname)
+		ReplaceLname(&msg, lname)
 		if replaceLink {
 			ReplaceATag(&msg, allATags, cid, seed, no)
 		}
-		ReplaceFname(&msg, fname)
-		ReplaceLname(&msg, lname)
 		ReplaceReader(&msg, cid, seed, no)
 		if dryRun {
 			log.Printf("%s\n", msg)
