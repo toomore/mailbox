@@ -79,7 +79,7 @@ func SendWG(params *ses.SendEmailInput, wg *sync.WaitGroup) {
 
 // ProcessSend is to start send from rows
 func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subject string, dryRun bool, limit int) {
-	var allATags []LinksData
+	var allATags map[string]LinksData
 
 	if replaceLink {
 		allATags = FilterATags(body, cid)
@@ -108,9 +108,6 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 		ReplaceReader(&msg, cid, seed, no)
 		if dryRun {
 			log.Printf("%s\n", msg)
-			for i, v := range allATags {
-				fmt.Printf("%02d => [%s] %s\n", i, v.LinkID, v.URL)
-			}
 		} else {
 			wg.Add(1)
 			ql <- struct{}{}
@@ -122,5 +119,12 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 		count++
 	}
 	wg.Wait()
+	if dryRun {
+		var n int
+		for _, v := range allATags {
+			n++
+			fmt.Printf("%02d => [%s] %s\n", n, v.LinkID, v.URL)
+		}
+	}
 	log.Printf("\n  cid: %s, count: %d\n  Subject: `%s`\n", cid, count, subject)
 }

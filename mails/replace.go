@@ -39,11 +39,12 @@ func ReplaceLname(html *[]byte, lname string) {
 }
 
 // ReplaceATag is to replace HTML a tag
-func ReplaceATag(html *[]byte, allATags []LinksData, cid string, seed string, uid string) {
+func ReplaceATag(html *[]byte, allATags map[string]LinksData, cid string, seed string, uid string) {
 	data := url.Values{}
 	data.Set("c", cid)
 	data.Set("u", uid)
 	data.Set("t", "a")
+
 	for _, v := range allATags {
 		data.Set("l", v.LinkID)
 		hm := campaign.MakeMacSeed(seed, data)
@@ -61,13 +62,13 @@ type LinksData struct {
 }
 
 // FilterATags is to filter, find all a tag data
-func FilterATags(body []byte, cid string) []LinksData {
+func FilterATags(body []byte, cid string) map[string]LinksData {
 	allATags := areg.FindAllSubmatch(body, -1)
-	result := make([]LinksData, len(allATags))
+	result := make(map[string]LinksData)
 	var wg sync.WaitGroup
 	wg.Add(len(allATags))
-	for i, v := range allATags {
-		go func(i int, url []byte) {
+	for _, v := range allATags {
+		go func(url []byte) {
 			md5h := md5.New()
 			md5h.Write(url)
 			md5hstr := fmt.Sprintf("%x", md5h.Sum(nil))
@@ -79,11 +80,13 @@ func FilterATags(body []byte, cid string) []LinksData {
 					rows.Scan(&linkID)
 				}
 			}
-			result[i].Md5h = md5hstr
-			result[i].LinkID = linkID
-			result[i].URL = url
+			result[linkID] = LinksData{
+				Md5h:   md5hstr,
+				LinkID: linkID,
+				URL:    url,
+			}
 			wg.Done()
-		}(i, v[1])
+		}(v[1])
 	}
 	wg.Wait()
 	return result
