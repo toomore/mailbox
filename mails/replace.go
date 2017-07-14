@@ -13,7 +13,10 @@ import (
 	"github.com/toomore/mailbox/utils"
 )
 
-var htmla = regexp.MustCompile(`href="(http[s]?://[a-zA-z0-9/\.:?=,-@%()_&\+]+)"`)
+var (
+	htmla    = regexp.MustCompile(`href="(http[s]?://[a-zA-z0-9/\.:?=,-@%()_&\+]+)"`)
+	washireg = regexp.MustCompile(`href="({{WASHI}}(.+){{\/WASHI}})"`)
+)
 
 // ReplaceReader is to replace reader open mail link
 func ReplaceReader(html *[]byte, cid string, seed string, uid string) {
@@ -54,6 +57,21 @@ func ReplaceATag(html *[]byte, allATags map[string]LinksData, cid string, seed s
 	}
 }
 
+// ReplaceWashiTag is to replace HTML a tag
+func ReplaceWashiTag(html *[]byte, allATags map[string]LinksData, cid string, seed string, uid string) {
+	data := url.Values{}
+	data.Set("c", cid)
+	data.Set("u", uid)
+
+	for _, v := range allATags {
+		data.Set("l", v.LinkID)
+		hm := campaign.MakeMacSeed(seed, data)
+
+		*html = bytes.Replace(*html, []byte(fmt.Sprintf("href=\"%s\"", v.URL)),
+			[]byte(fmt.Sprintf("href=\"https://%s/washi/%x?%s\"", os.Getenv("mailbox_web_site"), hm, data.Encode())), -1)
+	}
+}
+
 // LinksData is the link data
 type LinksData struct {
 	Md5h   string
@@ -63,7 +81,16 @@ type LinksData struct {
 
 // FilterATags is to filter, find all a tag data
 func FilterATags(body *[]byte, cid string) map[string]LinksData {
-	allATags := htmla.FindAllSubmatch(*body, -1)
+	return filteratags(htmla, body, cid)
+}
+
+// FilterWashiTags is to filter, find all {{WASHI}} tag data
+func FilterWashiTags(body *[]byte, cid string) map[string]LinksData {
+	return filteratags(washireg, body, cid)
+}
+
+func filteratags(rg *regexp.Regexp, body *[]byte, cid string) map[string]LinksData {
+	allATags := rg.FindAllSubmatch(*body, -1)
 	result := make(map[string]LinksData)
 	var wg sync.WaitGroup
 	wg.Add(len(allATags))

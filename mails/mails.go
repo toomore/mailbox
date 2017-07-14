@@ -86,12 +86,13 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 	ql = make(chan struct{}, limit)
 	for rows.Next() {
 		var (
-			allATags map[string]LinksData
-			email    string
-			fname    string
-			lname    string
-			msg      []byte
-			no       string
+			allATags     map[string]LinksData
+			allWashiTags map[string]LinksData
+			email        string
+			fname        string
+			lname        string
+			msg          []byte
+			no           string
 		)
 
 		rows.Scan(&no, &email, &fname, &lname)
@@ -102,6 +103,8 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 		if replaceLink {
 			allATags = FilterATags(&msg, cid)
 			ReplaceATag(&msg, allATags, cid, seed, no)
+			allWashiTags = FilterWashiTags(&msg, cid)
+			ReplaceWashiTag(&msg, allWashiTags, cid, seed, no)
 		}
 		ReplaceReader(&msg, cid, seed, no)
 		if dryRun {
@@ -110,6 +113,10 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 			for _, v := range allATags {
 				n++
 				fmt.Printf("%02d => [%s] %s\n", n, v.LinkID, v.URL)
+			}
+			for _, v := range allWashiTags {
+				n++
+				fmt.Printf("%02d => [W][%s] %s\n", n, v.LinkID, v.URL)
 			}
 		} else {
 			wg.Add(1)
