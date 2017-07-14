@@ -24,12 +24,13 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/toomore/mailbox/campaign"
+	"github.com/toomore/mailbox/mails"
 	"github.com/toomore/mailbox/reader"
 	"github.com/toomore/mailbox/utils"
 )
 
 var (
-	servercExpr      = regexp.MustCompile(`/(read|door)/([0-9a-z]+)`)
+	servercExpr      = regexp.MustCompile(`/(read|door|washi)/([0-9a-z]+)`)
 	serverhttpPort   *string
 	serverlinksCache = make(map[string]string)
 	serverConn       *sql.DB
@@ -57,15 +58,39 @@ func read(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func washi(v url.Values, url string) []byte {
+	washigroup := regexp.MustCompile(`{{WASHI}}(.+){{/WASHI}}`).FindStringSubmatch(url)
+	if len(washigroup) > 1 {
+		washiURL := []byte(washigroup[1])
+		userrows, err := serverConn.Query(`SELECT f_name, l_name from user WHERE id=?`, v.Get("u"))
+		if err == nil {
+			for userrows.Next() {
+				var (
+					fname string
+					lname string
+				)
+				userrows.Scan(&fname, &lname)
+				mails.ReplaceFname(&washiURL, fname)
+				mails.ReplaceLname(&washiURL, lname)
+				return washiURL
+			}
+		}
+	}
+	return nil
+}
+
 func door(w http.ResponseWriter, r *http.Request) {
 	v, _ := url.ParseQuery(r.Header.Get("X-Args"))
-	if v.Get("t") != "a" {
-		log.Println("No `t`", v.Get("t"))
-		return
+
+	match := servercExpr.FindStringSubmatch(r.Header.Get("X-Uri"))
+	if match[1] == "door" {
+		if v.Get("t") != "a" {
+			log.Println("No `t`", v.Get("t"))
+			return
+		}
 	}
 
 	var hm string
-	match := servercExpr.FindStringSubmatch(r.Header.Get("X-Uri"))
 	if len(match) >= 3 {
 		hm = match[2]
 	}
@@ -78,9 +103,15 @@ func door(w http.ResponseWriter, r *http.Request) {
 
 		serverlinksCacheKey := fmt.Sprintf("%s|%s", v.Get("c"), v.Get("l"))
 		if url, ok := serverlinksCache[serverlinksCacheKey]; ok {
-			log.Println("Using door cache", serverlinksCacheKey, url)
-			http.Redirect(w, r, url, http.StatusSeeOther)
-			return
+			log.Println("Using", match[1], "cache", serverlinksCacheKey, url)
+			switch match[1] {
+			case "door":
+				http.Redirect(w, r, url, http.StatusSeeOther)
+				return
+			case "washi":
+				http.Redirect(w, r, string(washi(v, url)), http.StatusSeeOther)
+				return
+			}
 		}
 
 		rows, err := serverConn.Query(`SELECT url FROM links WHERE cid=? AND id=?`, v.Get("c"), v.Get("l"))
@@ -89,9 +120,15 @@ func door(w http.ResponseWriter, r *http.Request) {
 				var url string
 				rows.Scan(&url)
 				serverlinksCache[serverlinksCacheKey] = url
-				log.Println("Find door", serverlinksCacheKey, url)
-				http.Redirect(w, r, url, http.StatusSeeOther)
-				return
+				log.Println("Find", match[1], serverlinksCacheKey, url)
+				switch match[1] {
+				case "door":
+					http.Redirect(w, r, url, http.StatusSeeOther)
+					return
+				case "washi":
+					http.Redirect(w, r, string(washi(v, url)), http.StatusSeeOther)
+					return
+				}
 			}
 		}
 	} else {
@@ -112,6 +149,7 @@ var serverCmd = &cobra.Command{
 		fmt.Println("Run server ...")
 		http.HandleFunc("/read/", read)
 		http.HandleFunc("/door/", door)
+		http.HandleFunc("/washi/", door)
 		log.Println("HTTP Port:", *serverhttpPort)
 		log.Println(http.ListenAndServe(*serverhttpPort, nil))
 	},

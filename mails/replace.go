@@ -15,7 +15,7 @@ import (
 
 var (
 	htmla    = regexp.MustCompile(`href="(http[s]?://[a-zA-z0-9/\.:?=,-@%()_&\+]+)"`)
-	washireg = regexp.MustCompile(`href="({{WASHI}}(.+){{\/WASHI}})"`)
+	washireg = regexp.MustCompile(`href="({{WASHI}}.+{{\/WASHI}})"`)
 )
 
 // ReplaceReader is to replace reader open mail link
