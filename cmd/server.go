@@ -61,9 +61,9 @@ func read(w http.ResponseWriter, r *http.Request) {
 func washi(v url.Values, url string) []byte {
 	washigroup := regexp.MustCompile(`{{WASHI}}(.+){{/WASHI}}`).FindStringSubmatch(url)
 	if len(washigroup) > 1 {
-		washiURL := []byte(washigroup[1])
 		userrows, err := serverConn.Query(`SELECT f_name, l_name from user WHERE id=?`, v.Get("u"))
 		if err == nil {
+			washiURL := []byte(washigroup[1])
 			for userrows.Next() {
 				var (
 					fname string
