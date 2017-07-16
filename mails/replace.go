@@ -90,9 +90,12 @@ func FilterWashiTags(body *[]byte, cid string) map[string]LinksData {
 }
 
 func filteratags(rg *regexp.Regexp, body *[]byte, cid string) map[string]LinksData {
-	allATags := rg.FindAllSubmatch(*body, -1)
-	result := make(map[string]LinksData)
-	var wg sync.WaitGroup
+	var (
+		allATags = rg.FindAllSubmatch(*body, -1)
+		conn     = utils.GetConn()
+		result   = make(map[string]LinksData)
+		wg       sync.WaitGroup
+	)
 	wg.Add(len(allATags))
 	for _, v := range allATags {
 		go func(url []byte) {
@@ -100,9 +103,9 @@ func filteratags(rg *regexp.Regexp, body *[]byte, cid string) map[string]LinksDa
 			md5h.Write(url)
 			md5hstr := fmt.Sprintf("%x", md5h.Sum(nil))
 			linkID := fmt.Sprintf("%s", utils.GenSeed())
-			_, err := utils.GetConn().Query(`INSERT INTO links(id,cid,url,urlhash) VALUES(?,?,?,?)`, linkID, cid, url, md5hstr)
+			_, err := conn.Query(`INSERT INTO links(id,cid,url,urlhash) VALUES(?,?,?,?)`, linkID, cid, url, md5hstr)
 			if err != nil {
-				rows, _ := utils.GetConn().Query(`SELECT id FROM links WHERE cid=? AND urlhash=?`, cid, md5hstr)
+				rows, _ := conn.Query(`SELECT id FROM links WHERE cid=? AND urlhash=?`, cid, md5hstr)
 				for rows.Next() {
 					rows.Scan(&linkID)
 				}
@@ -116,5 +119,6 @@ func filteratags(rg *regexp.Regexp, body *[]byte, cid string) map[string]LinksDa
 		}(v[1])
 	}
 	wg.Wait()
+	conn.Close()
 	return result
 }
