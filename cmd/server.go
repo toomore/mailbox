@@ -61,7 +61,7 @@ func read(w http.ResponseWriter, r *http.Request) {
 func washi(v url.Values, url string) []byte {
 	washigroup := regexp.MustCompile(`{{WASHI}}(.+){{/WASHI}}`).FindStringSubmatch(url)
 	if len(washigroup) > 1 {
-		userrows, err := serverConn.Query(`SELECT f_name, l_name from user WHERE id=?`, v.Get("u"))
+		userrows, err := serverConn.Query(`SELECT f_name, l_name FROM user WHERE id=?`, v.Get("u"))
 		if err == nil {
 			washiURL := []byte(washigroup[1])
 			for userrows.Next() {
@@ -101,9 +101,26 @@ func door(w http.ResponseWriter, r *http.Request) {
 			v.Get("c"), v.Get("u"), v.Get("l"), r.Header.Get("X-Real-Ip"), r.Header.Get("User-Agent"))
 		serverLog("[door] Pass", r)
 
-		serverlinksCacheKey := fmt.Sprintf("%s|%s", v.Get("c"), v.Get("l"))
-		if url, ok := serverlinksCache[serverlinksCacheKey]; ok {
+		var (
+			serverlinksCacheKey = fmt.Sprintf("%s|%s", v.Get("c"), v.Get("l"))
+			ok                  bool
+			url                 string
+		)
+
+		if url, ok = serverlinksCache[serverlinksCacheKey]; ok {
 			log.Println("Using", match[1], "cache", serverlinksCacheKey, url)
+		} else {
+			rows, err := serverConn.Query(`SELECT url FROM links WHERE cid=? AND id=?`, v.Get("c"), v.Get("l"))
+			if err == nil {
+				for rows.Next() {
+					rows.Scan(&url)
+					serverlinksCache[serverlinksCacheKey] = url
+					log.Println("Find", match[1], serverlinksCacheKey, url)
+				}
+			}
+		}
+
+		if url != "" {
 			switch match[1] {
 			case "door":
 				http.Redirect(w, r, url, http.StatusSeeOther)
@@ -111,24 +128,6 @@ func door(w http.ResponseWriter, r *http.Request) {
 			case "washi":
 				http.Redirect(w, r, string(washi(v, url)), http.StatusSeeOther)
 				return
-			}
-		}
-
-		rows, err := serverConn.Query(`SELECT url FROM links WHERE cid=? AND id=?`, v.Get("c"), v.Get("l"))
-		if err == nil {
-			for rows.Next() {
-				var url string
-				rows.Scan(&url)
-				serverlinksCache[serverlinksCacheKey] = url
-				log.Println("Find", match[1], serverlinksCacheKey, url)
-				switch match[1] {
-				case "door":
-					http.Redirect(w, r, url, http.StatusSeeOther)
-					return
-				case "washi":
-					http.Redirect(w, r, string(washi(v, url)), http.StatusSeeOther)
-					return
-				}
 			}
 		}
 	} else {
