@@ -61,7 +61,7 @@ Support bash-completion
 
 Import User data from csv
 --------------------------
-匯入訂閱者資訊與建立 csv 檔案，檔案內需包含 `email`, `groups`, `f_name`, `l_name` 欄位。
+匯入訂閱者資訊的 csv 檔案，檔案內需包含 `email`, `groups`, `f_name`, `l_name` 欄位。
 
     mailbox user import ./list.csv
 
@@ -69,3 +69,12 @@ Import User data from csv
 
     mailbox user import ./list.csv -d
     ...
+
+Template Replace
+-----------------
+利用 `mailbox send -p [HTML path]` 時，可以在指定的 HTML 檔案中放入可被替換參數。
+
+- `{{FNAME}}`：訂閱者的 `first name`
+- `{{LNAME}}`：訂閱者的 `last name`
+- `{{READER}}`：放置開信追蹤連結。例：`<img src="{{READER}}">`
+- `{{WASHI}}...{{/WASHI}}`：放置點擊後才替換的參數。例：`{{WASHI}}http://example.com/?lname={{LNAME}}{{/WASHI}}`
