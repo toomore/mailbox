@@ -189,6 +189,57 @@ func openHistory(cid string, groups string) {
 	fmt.Printf("Count: %d\n", count)
 }
 
+func showDoors(gid, cid string) {
+	rows, err := campaignConn.Query(`
+SELECT
+  CONCAT(user.f_name, ' ',user.l_name) as name,
+  user.id,
+  user.email,
+  links.url,
+  doors.ip,
+  doors.created,
+  doors.agent
+FROM
+  user,links,doors
+WHERE
+      user.id = doors.uid
+  AND doors.linkid = links.id
+  AND doors.cid = ?
+  AND links.cid = ?
+  AND user.groups = ?
+ORDER BY doors.created ASC
+`, cid, cid, gid)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer rows.Close()
+	var (
+		name    string
+		id      string
+		email   string
+		url     string
+		ip      string
+		created time.Time
+		agent   string
+		count   int
+	)
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
+	for rows.Next() {
+		if err := rows.Scan(&name, &id, &email, &url, &ip, &created, &agent); err != nil {
+			log.Println("[err]", err)
+		} else {
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", "created*", "name", "email", "ip")
+			fmt.Fprintf(w, "%s\t%s (%s)\t%s\t%s\n", created, name, id, email, ip)
+			fmt.Fprintf(w, "%s\n", url)
+			fmt.Fprintf(w, "%s\n", agent)
+			w.Flush()
+			fmt.Println("------------------------------------------------------------------------------------------")
+			count++
+		}
+	}
+	fmt.Printf("Count: %d\n", count)
+}
+
 // campaignCmd represents the campaign command
 var campaignCmd = &cobra.Command{
 	Use:   "campaign",
@@ -282,10 +333,27 @@ var openhistoryCmd = &cobra.Command{
 	},
 }
 
+var doorsCmd = &cobra.Command{
+	Use:   "doors [group] [cid ...]",
+	Short: "Campaign click url by group by cid",
+	Long:  `依群組名單列出所有的連結點擊紀錄，支援多組 cid 依序列出。`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) < 2 {
+			cmd.Help()
+			log.Fatal("Lost data")
+		}
+		for _, cid := range args[1:] {
+			fmt.Printf("----- %s -----\n", cid)
+			showDoors(args[0], cid)
+		}
+	},
+}
+
 func init() {
 	campaignCID = hashCmd.Flags().String("cid", "", "campaign ID")
 	campaignUID = hashCmd.Flags().String("uid", "", "user ID")
 
 	RootCmd.AddCommand(campaignCmd)
-	campaignCmd.AddCommand(createCmd, listCmd, hashCmd, openCmd, opencountCmd, openhistoryCmd)
+	campaignCmd.AddCommand(createCmd, listCmd, hashCmd, openCmd, opencountCmd,
+		openhistoryCmd, doorsCmd)
 }
