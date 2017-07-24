@@ -96,7 +96,7 @@ func insertInto(data []user) {
 }
 
 func readUser(group string) {
-	rows, err := userConn.Query(`SELECT id,email,f_name,l_name,created FROM user WHERE groups=?`, group)
+	rows, err := userConn.Query(`SELECT id,email,f_name,l_name,alive,created FROM user WHERE groups=?`, group)
 	defer rows.Close()
 	if err != nil {
 		log.Fatal(err)
@@ -107,17 +107,18 @@ func readUser(group string) {
 		fname   string
 		lname   string
 		created time.Time
+		alive   int
 	)
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
-	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", "id", "email", "fname", "lname", "created")
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", "id", "email", "fname", "lname", "alive", "created")
 	for rows.Next() {
-		if err := rows.Scan(&id, &email, &fname, &lname, &created); err != nil {
+		if err := rows.Scan(&id, &email, &fname, &lname, &alive, &created); err != nil {
 			log.Println(err)
 		} else {
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", id, email, fname, lname, created)
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%d\t%s\n", id, email, fname, lname, alive, created)
 		}
 	}
-	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", "id", "email", "fname", "lname", "created")
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", "id", "email", "fname", "lname", "alive", "created")
 	w.Flush()
 }
 
