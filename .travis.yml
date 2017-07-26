@@ -8,6 +8,10 @@ go:
     - 1.8.x
     - tip
 
+env:
+    - GIMME_OS=linux GIMME_ARCH=amd64
+    - GIMME_OS=darwin GIMME_ARCH=amd64
+
 services:
     - docker
 
@@ -17,9 +21,8 @@ addons:
         - MARIADB
 
 before_install:
-    - go get github.com/golang/lint/golint
-    - go get github.com/mattn/goveralls
-    - go get golang.org/x/tools/cmd/goimports
+    - go get -v github.com/golang/lint/golint
+    - go get -v golang.org/x/tools/cmd/goimports
 
 before_script:
     - echo "USE mysql;\nUPDATE user SET password=PASSWORD('mailboxdbs') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
@@ -28,8 +31,11 @@ before_script:
 
 script:
     - sh ./goclean.sh
-    - $HOME/gopath/bin/goveralls -coverprofile=coverage.cov -service=travis-ci
     - sh ./build-base.sh
     - sh ./build-min.sh
     - docker images
     - docker run -it --rm toomore/mailbox:cmd sh -c "mailbox -h"
+
+after_success:
+    - go get -v github.com/mattn/goveralls
+    - $HOME/gopath/bin/goveralls -coverprofile=coverage.cov -service=travis-ci
