@@ -22,10 +22,11 @@ before_install:
     - go get golang.org/x/tools/cmd/goimports
 
 script:
-    - sh ./goclean.sh
-    - $HOME/gopath/bin/goveralls -coverprofile=coverage.cov -service=travis-ci
-    - bash <(curl -s https://codecov.io/bash)
+    #- sh ./goclean.sh
+    #- $HOME/gopath/bin/goveralls -coverprofile=coverage.cov -service=travis-ci
+    #- bash <(curl -s https://codecov.io/bash)
     - sh ./build-base.sh
     - sh ./build-min.sh
     - docker images
+    - sh ./dev-run-mariadb.sh
     - docker run -it --rm toomore/mailbox:cmd sh -c "mailbox -h"
