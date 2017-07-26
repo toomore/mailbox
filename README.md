@@ -1,4 +1,4 @@
-Mailbox  [![GitHub release](https://img.shields.io/github/release/toomore/mailbox.svg)](https://github.com/toomore/mailbox/releases) [![Coverage Status](https://coveralls.io/repos/github/toomore/mailbox/badge.svg)](https://coveralls.io/github/toomore/mailbox) [![license](https://img.shields.io/github/license/toomore/mailbox.svg)](https://github.com/toomore/mailbox/blob/master/LICENSE)
+Mailbox  [![GitHub release](https://img.shields.io/github/release/toomore/mailbox.svg)](https://github.com/toomore/mailbox/releases) [![Build Status](https://travis-ci.org/toomore/mailbox.svg?branch=master)](https://travis-ci.org/toomore/mailbox) [![Coverage Status](https://coveralls.io/repos/github/toomore/mailbox/badge.svg)](https://coveralls.io/github/toomore/mailbox) [![license](https://img.shields.io/github/license/toomore/mailbox.svg)](https://github.com/toomore/mailbox/blob/master/LICENSE)
 =====================
 簡易電子報發送系統，使用 Golang 實作。建立發送 `campaign` 資訊、匯入訂閱者資訊（群組標記）、簡易發送系統、開信追蹤與連結點擊追蹤。
 
