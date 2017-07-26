@@ -37,6 +37,16 @@ func TestCheckMac(t *testing.T) {
 	t.Log(CheckMac(hm, cid, data))
 }
 
+func TestMakeMacSeed(t *testing.T) {
+	data := url.Values{}
+	data.Set("name", "toomore")
+	data.Set("age", "30")
+	data.Set("cid", "12345678")
+	if fmt.Sprintf("%x", MakeMacSeed("87654321", data)) != "37f90a0e96cebc981fa72cc64a79a942374906367dbc8c0fce44f9ec6dd7fe27" {
+		t.Error("Should be `37f90a0e96cebc981fa72cc64a79a942374906367dbc8c0fce44f9ec6dd7fe27`")
+	}
+}
+
 func ExampleCheckMac() {
 	hm := "fd3890c84e29acf04e1bc1cd2c6d37d49931209669bf94cacad65540570d9c12"
 	data := url.Values{}
