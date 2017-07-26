@@ -48,11 +48,11 @@ type user struct {
 func readCSV(path string) []user {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[cmd][readCSV][open]", err)
 	}
 	data, err := csv.NewReader(file).ReadAll()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[cmd][readCSV][ReadAll] ", err)
 	}
 	result := make([]user, len(data[1:]))
 	for i, v := range data[0] {
@@ -82,7 +82,7 @@ func insertInto(data []user) {
 	stmt, err := userConn.Prepare(`INSERT INTO user(email,groups,f_name,l_name)
 	                           VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE f_name=?, l_name=?`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[cmd][insertInto][Prepare]", err)
 	}
 	for _, v := range data {
 		if result, err := stmt.Exec(v.email, v.groups, v.fname, v.lname, v.fname, v.lname); err == nil {
@@ -99,7 +99,7 @@ func readUser(group string) {
 	rows, err := userConn.Query(`SELECT id,email,f_name,l_name,alive,created FROM user WHERE alive=1 AND groups=?`, group)
 	defer rows.Close()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[cmd][readUser][Query]", err)
 	}
 	var (
 		id      string

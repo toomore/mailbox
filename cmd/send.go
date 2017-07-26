@@ -58,11 +58,11 @@ var sendCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		file, err := os.Open(*sendPath)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("[cmd][send][open] ", err)
 		}
 		body, err := ioutil.ReadAll(file)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("[cmd][send][ReadAll] ", err)
 		}
 		var rows *sql.Rows
 		if *sendUID != "" {
@@ -76,7 +76,7 @@ var sendCmd = &cobra.Command{
 		}
 		defer rows.Close()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("[cmd][send][Query] ", err)
 		}
 
 		mails.ProcessSend(body, rows, *sendCID, *sendReplaceLink, *sendSubject, *sendDryRun, *sendLimit)

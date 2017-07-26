@@ -44,7 +44,7 @@ func create() ([8]byte, [8]byte) {
 	id, seed := utils.GenSeed(), utils.GenSeed()
 	_, err := campaignConn.Query(fmt.Sprintf(`INSERT INTO campaign(id,seed) VALUES('%s', '%s')`, id, seed))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[cmd][campaign][read]", err)
 	}
 	return id, seed
 }
@@ -52,7 +52,7 @@ func create() ([8]byte, [8]byte) {
 func list() {
 	rows, err := campaignConn.Query(`SELECT id,seed,created,updated FROM campaign ORDER BY updated DESC`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[cmd][campaign][list]", err)
 	}
 	defer rows.Close()
 	var (
@@ -88,7 +88,7 @@ func openGroups(cid string, groups string) {
 	WHERE groups=?
 	GROUP BY id;`, cid, groups)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[cmd][campaign][openGroups] ", err)
 	}
 	defer rows.Close()
 	var (
@@ -126,7 +126,7 @@ func openCount(cid string, groups string) {
 	GROUP BY uid
 	ORDER BY count DESC`, cid, groups)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[cmd][campaign][openCount] ", err)
 	}
 	defer rows.Close()
 	var (
@@ -161,7 +161,7 @@ func openHistory(cid string, groups string) {
 	ORDER BY reader.created ASC;
 	`, cid, groups)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[cmd][campaign][openHistory] ", err)
 	}
 	defer rows.Close()
 	var (
@@ -210,7 +210,7 @@ WHERE
 ORDER BY doors.created ASC
 `, cid, cid, gid)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal("[cmd][campaign][showDoors] ", err)
 	}
 	defer rows.Close()
 	var (

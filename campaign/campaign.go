@@ -42,13 +42,13 @@ func GetSeed(campaignID string) string {
 	rows, err := utils.GetConn().Query(`SELECT seed FROM campaign WHERE id=? `, campaignID)
 	defer rows.Close()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[campaign][GetSeed] ", err)
 	}
 	for rows.Next() {
 		rows.Scan(&seed)
 	}
 	if seed == "" {
-		log.Fatalln("Find no campaign ID")
+		log.Fatal("[campaign][GetSeed] Find no campaign ID")
 	}
 	cacheSeed[campaignID] = seed
 	return seed
@@ -61,7 +61,7 @@ func Create() ([8]byte, [8]byte) {
 	defer rows.Close()
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[campaign][Create] ", err)
 	}
 
 	return id, seed

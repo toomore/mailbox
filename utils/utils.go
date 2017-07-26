@@ -35,11 +35,11 @@ func GetConn() *sql.DB {
 	var err error
 	var conn *sql.DB
 	if conn, err = sql.Open("mysql", SQLPATH); err != nil {
-		log.Fatal(err)
+		log.Fatal("[GetConn] ", err)
 	}
 	conn.SetMaxOpenConns(1024)
 	if err := conn.Ping(); err != nil {
-		log.Fatal(err)
+		log.Fatal("[GetConn][Ping] ", err)
 	}
 
 	return conn
