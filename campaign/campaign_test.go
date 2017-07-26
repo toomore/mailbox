@@ -10,18 +10,21 @@ import (
 )
 
 func TestMakeMac(t *testing.T) {
+	campaignID, _ := Create()
+	cid := fmt.Sprintf("%s", campaignID)
+
 	data := url.Values{}
 	data.Set("name", "toomore")
 	data.Set("age", "30")
-	data.Set("cid", "f2d024db")
+	data.Set("cid", cid)
 	t.Log(data.Encode())
-	t.Logf("%x\n", MakeMac("f2d024db", data))
+	t.Logf("%x\n", MakeMac(cid, data))
 }
 
 func TestCheckMac(t *testing.T) {
 	campaignID, seed := Create()
-	t.Logf("cid: %x, seed: %x", campaignID, seed)
 	cid := fmt.Sprintf("%s", campaignID)
+	t.Logf("cid: %s, seed: %s", campaignID, seed)
 
 	data := url.Values{}
 	data.Set("name", "toomore")
