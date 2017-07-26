@@ -29,6 +29,6 @@ script:
     #- docker run -it --rm toomore/mailbox:cmd sh -c "mailbox -h"
     - sh ./dev-run-mariadb.sh
     - docker ps --all
-    - docker run -it --rm --link mailbox-mariadb:MARIADB -v $(pwd)/sql:/sql mariadb:10.1.24 sh -c "cat /ets/hosts; mysql -h MARIADB -uroot -pmailboxdbs < /sql/database.sql"
+    - docker run -it --rm --link mailbox-mariadb:MARIADB -v $(pwd)/sql:/sql mariadb:10.1.24 sh -c "cat /etc/hosts; mysql -h MARIADB -uroot -pmailboxdbs < /sql/database.sql"
     - docker run -it --rm --link mailbox-mariadb:MARIADB -v $(pwd)/sql:/sql mariadb:10.1.24 sh -c "mysql -h MARIADB -uroot -pmailboxdbs < /sql/tables.sql"
     - sh ./dev-run-docker-travis.sh
