@@ -13,4 +13,4 @@ docker run -it --rm --link mailbox-mariadb:MARIADB                             \
            -e "mailbox_ses_token=???"                                          \
            -e "mailbox_ses_sender=???"                                         \
            -e "mailbox_web_site=???"                                           \
-           golang:1.8.3 bash -c "cd /go/src/github.com/toomore/mailbox; sh ./goclean.sh;"
+           golang:1.8.3 bash -c "cd /go/src/github.com/toomore/mailbox; go get -v ./; sh ./goclean.sh;"
