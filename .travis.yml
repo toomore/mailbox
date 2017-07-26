@@ -28,6 +28,8 @@ script:
     - sh ./build-base.sh
     - sh ./build-min.sh
     - docker images
-    - sh ./dev-run-mariadb.sh
     - docker run -it --rm toomore/mailbox:cmd sh -c "mailbox -h"
+    - sh ./dev-run-mariadb.sh
+    - docker run -it --rm --link mailbox-mariadb:MARIADB -v $(pwd)/sql:/sql mariadb:10.1.24 sh -c "mysql -h MARIADB -uroot -pmailboxdbs < /sql/database.sql"
+    - docker run -it --rm --link mailbox-mariadb:MARIADB -v $(pwd)/sql:/sql mariadb:10.1.24 sh -c "mysql -h MARIADB -uroot -pmailboxdbs < /sql/tables.sql"
     - sh ./dev-run-docker-travis.sh

@@ -10,6 +10,9 @@
 
 set -e
 
+go get github.com/golang/lint/golint
+go get golang.org/x/tools/cmd/goimports
+
 # Automatic checks
 test -z "$(gofmt -l -w ./     | tee /dev/stderr)"
 test -z "$(goimports -l -w ./ | tee /dev/stderr)"
