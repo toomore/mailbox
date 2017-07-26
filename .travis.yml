@@ -11,6 +11,11 @@ go:
 services:
     - docker
 
+addons:
+    mariadb: '10.1.24'
+    hosts:
+        - MARIADB
+
 before_install:
     - go get github.com/golang/lint/golint
     - go get github.com/mattn/goveralls
@@ -21,6 +26,6 @@ script:
     - $HOME/gopath/bin/goveralls -coverprofile=coverage.cov -service=travis-ci
     - bash <(curl -s https://codecov.io/bash)
     - sh ./build-base.sh
-    - sh ./build-mini.sh
+    - sh ./build-min.sh
     - docker images
     - docker run -it --rm toomore/mailbox:cmd sh -c "mailbox -h"
