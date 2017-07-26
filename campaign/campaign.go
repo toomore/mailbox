@@ -2,6 +2,7 @@ package campaign
 
 import (
 	"crypto/hmac"
+	"fmt"
 	"log"
 	"net/url"
 
@@ -51,4 +52,17 @@ func GetSeed(campaignID string) string {
 	}
 	cacheSeed[campaignID] = seed
 	return seed
+}
+
+// Create is to create a new campaign id and seed
+func Create() ([8]byte, [8]byte) {
+	id, seed := utils.GenSeed(), utils.GenSeed()
+	rows, err := utils.GetConn().Query(fmt.Sprintf(`INSERT INTO campaign(id,seed) VALUES('%s', '%s')`, id, seed))
+	defer rows.Close()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return id, seed
 }

@@ -2,6 +2,7 @@ package campaign
 
 import (
 	"encoding/hex"
+	"fmt"
 	"net/url"
 	"testing"
 
@@ -18,15 +19,19 @@ func TestMakeMac(t *testing.T) {
 }
 
 func TestCheckMac(t *testing.T) {
-	campaignID := "f2d024db"
+	campaignID, seed := Create()
+	t.Logf("cid: %x, seed: %x", campaignID, seed)
+	cid := fmt.Sprintf("%s", campaignID)
+
 	data := url.Values{}
 	data.Set("name", "toomore")
 	data.Set("age", "30")
-	data.Set("cid", campaignID)
+	data.Set("cid", cid)
 	t.Log(data.Encode())
-	hm := MakeMac(campaignID, data)
+
+	hm := MakeMac(cid, data)
 	t.Logf("%x\n", hm)
-	t.Log(CheckMac(hm, campaignID, data))
+	t.Log(CheckMac(hm, cid, data))
 }
 
 func ExampleCheckMac() {

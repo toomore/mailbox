@@ -23,6 +23,7 @@ before_install:
 
 before_script:
   - echo "USE mysql;\nUPDATE user SET password=PASSWORD('mailboxdbs') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
+
 script:
     - mysql -h MARIADB -uroot -pmailboxdbs < ./sql/database.sql
     - mysql -h MARIADB -uroot -pmailboxdbs mailbox < ./sql/tables.sql
