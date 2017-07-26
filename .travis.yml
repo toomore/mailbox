@@ -30,3 +30,4 @@ script:
     - docker images
     - sh ./dev-run-mariadb.sh
     - docker run -it --rm toomore/mailbox:cmd sh -c "mailbox -h"
+    - sh ./dev-run-docker-travis.sh
