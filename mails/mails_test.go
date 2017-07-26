@@ -8,6 +8,10 @@ import (
 	"github.com/toomore/mailbox/utils"
 )
 
+func TestGenParams(t *testing.T) {
+	t.Logf("%+v", GenParams("toomore0929@gmail.com", "message", "[Test]"))
+}
+
 func TestProcessSend(t *testing.T) {
 	stmt, err := utils.GetConn().Prepare(`INSERT INTO user(email,groups,f_name,l_name)
 	                           VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE f_name=?, l_name=?`)
