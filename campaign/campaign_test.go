@@ -47,6 +47,17 @@ func TestMakeMacSeed(t *testing.T) {
 	}
 }
 
+func TestGetSeed(t *testing.T) {
+	campaignID, seed := Create()
+	cid := fmt.Sprintf("%s", campaignID)
+	t.Logf("cid: %s, seed: %s", campaignID, seed)
+
+	gseed := GetSeed(cid)
+	if fmt.Sprintf("%s", seed) != gseed {
+		t.Error("Seed fail", seed, gseed)
+	}
+}
+
 func ExampleCheckMac() {
 	hm := "fd3890c84e29acf04e1bc1cd2c6d37d49931209669bf94cacad65540570d9c12"
 	data := url.Values{}
