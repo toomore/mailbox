@@ -19,12 +19,13 @@ func TestProcessSend(t *testing.T) {
 		t.Fatal(err)
 	}
 	stmt.Exec("toomore0929@gmail.com", "test", "Toomore", "Chiang", "Toomore", "Chiang")
-	rows, err := utils.GetConn().Query("select id,email,f_name,l_name from user")
+	rows, err := utils.GetConn().Query("select id,email,f_name,l_name from user where groups='test'")
 
 	if err != nil {
 		t.Fatal(err)
 	}
 	cid, _ := campaign.Create()
+	// Test with dry run
 	ProcessSend(
 		[]byte(`<a href="https://toomore.net/">1</a><a href="{{WASHI}}https://toomore.net/{{/WASHI}}">2</a>`),
 		rows,
@@ -32,5 +33,21 @@ func TestProcessSend(t *testing.T) {
 		true,
 		"Test",
 		true,
+		4)
+
+	stmt.Exec("to", "test2", "Toomore", "Chiang", "Toomore", "Chiang")
+	rows, err = utils.GetConn().Query("select id,email,f_name,l_name from user where groups='test2'")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Test Run
+	ProcessSend(
+		[]byte(`<a href="https://toomore.net/">1</a><a href="{{WASHI}}https://toomore.net/{{/WASHI}}">2</a>`),
+		rows,
+		fmt.Sprintf("%s", cid),
+		true,
+		"Test",
+		false,
 		4)
 }
