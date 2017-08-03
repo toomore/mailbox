@@ -20,6 +20,13 @@ func TestReplaceReader(t *testing.T) {
 	}
 }
 
+func BenchmarkReplaceReader(b *testing.B) {
+	html := []byte(`<img src="{{READER}}">`)
+	for i := 0; i < b.N; i++ {
+		ReplaceReader(&html, "12345678", "87654321", "11")
+	}
+}
+
 func TestReplaceFname(t *testing.T) {
 	html := []byte(`{{FNAME}} {{LNAME}}`)
 	ReplaceFname(&html, "Toomore")
@@ -29,6 +36,20 @@ func TestReplaceFname(t *testing.T) {
 	ReplaceLname(&html, "Chiang")
 	if fmt.Sprintf("%s", html) != "Toomore Chiang" {
 		t.Error("Should be `Toomore Chiang`")
+	}
+}
+
+func BenchmarkReplaceFname(b *testing.B) {
+	html := []byte(`{{FNAME}} {{LNAME}}`)
+	for i := 0; i < b.N; i++ {
+		ReplaceFname(&html, "Toomore")
+	}
+}
+
+func BenchmarkReplaceLname(b *testing.B) {
+	html := []byte(`{{FNAME}} {{LNAME}}`)
+	for i := 0; i < b.N; i++ {
+		ReplaceLname(&html, "Chiang")
 	}
 }
 
@@ -56,4 +77,34 @@ func TestFilterATags(t *testing.T) {
 	}
 	ReplaceWashiTag(&html, links, "12345678", "87654321", "11")
 	t.Logf("%s", html)
+}
+
+func BenchmarkFilterATags(b *testing.B) {
+	html := []byte(`<a href="https://toomore.net/">1</a><a href="{{WASHI}}https://toomore.net/?name={{FNAME}}{{/WASHI}}">2</a>`)
+	for i := 0; i < b.N; i++ {
+		FilterATags(&html, "12345678")
+	}
+}
+
+func BenchmarkReplaceATag(b *testing.B) {
+	html := []byte(`<a href="https://toomore.net/">1</a><a href="{{WASHI}}https://toomore.net/?name={{FNAME}}{{/WASHI}}">2</a>`)
+	links := FilterATags(&html, "12345678")
+	for i := 0; i < b.N; i++ {
+		ReplaceATag(&html, links, "12345678", "87654321", "11")
+	}
+}
+
+func BenchmarkFilterWashiTags(b *testing.B) {
+	html := []byte(`<a href="https://toomore.net/">1</a><a href="{{WASHI}}https://toomore.net/?name={{FNAME}}{{/WASHI}}">2</a>`)
+	for i := 0; i < b.N; i++ {
+		FilterWashiTags(&html, "12345678")
+	}
+}
+
+func BenchmarkReplaceWashiTag(b *testing.B) {
+	html := []byte(`<a href="https://toomore.net/">1</a><a href="{{WASHI}}https://toomore.net/?name={{FNAME}}{{/WASHI}}">2</a>`)
+	links := FilterWashiTags(&html, "12345678")
+	for i := 0; i < b.N; i++ {
+		ReplaceWashiTag(&html, links, "12345678", "87654321", "11")
+	}
 }
