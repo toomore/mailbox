@@ -40,3 +40,17 @@ func TestGetConn(t *testing.T) {
 		t.Log(id)
 	}
 }
+
+func BenchmarkGenSeed(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		GenSeed()
+	}
+}
+
+func BenchmarkGenHmac(b *testing.B) {
+	seed := GenSeed()
+	msg := []byte("Toomore")
+	for i := 0; i < b.N; i++ {
+		GenHmac(seed[:], msg)
+	}
+}
