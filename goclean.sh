@@ -32,7 +32,6 @@ echo "mode: count" > coverage.cov
 for dir in $(find . -maxdepth 10 -not -path './.git*' -not -path '*/_*' -not -path './cmd' -not -path './cmd/docs' -not -path './sql' -type d);
 do
 if ls $dir/*.go &> /dev/null; then
-    #go test -v --benchmem --bench=. -covermode=count -covercoverage=$dir/coverage.tmp $dir
     go test -v -covermode=count -coverprofile=$dir/coverage.tmp $dir
     if [ -f $dir/coverage.tmp ]
     then

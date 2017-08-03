@@ -31,6 +31,8 @@ before_script:
 
 script:
     - sh ./goclean.sh
+    - go test -v -bench=Bench -benchmem -run='Bench' ./mails
+    - go test -v -bench=Bench -benchmem -run='Bench' ./utils
     - sh ./build-base.sh
     - sh ./build-min.sh
     - docker images
