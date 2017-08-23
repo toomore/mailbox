@@ -1,4 +1,4 @@
-FROM golang:alpine
+FROM golang:1.8.3-alpine3.6
 MAINTAINER Toomore Chiang <toomore0929@gmail.com>
 
 WORKDIR /go/src/github.com/toomore/mailbox/
