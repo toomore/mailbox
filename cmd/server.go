@@ -21,7 +21,6 @@
 package cmd
 
 import (
-	"database/sql"
 	"encoding/hex"
 	"fmt"
 	"log"
@@ -40,7 +39,6 @@ var (
 	servercExpr      = regexp.MustCompile(`/(read|door|washi)/([0-9a-z]+)`)
 	serverhttpPort   *string
 	serverlinksCache = make(map[string]string)
-	serverConn       *sql.DB
 )
 
 func serverLog(note string, r *http.Request) {
@@ -68,7 +66,7 @@ func read(w http.ResponseWriter, r *http.Request) {
 func washi(v url.Values, url string) []byte {
 	washigroup := regexp.MustCompile(`{{WASHI}}(.+){{/WASHI}}`).FindStringSubmatch(url)
 	if len(washigroup) > 1 {
-		userrows, err := serverConn.Query(`SELECT f_name, l_name FROM user WHERE id=?`, v.Get("u"))
+		userrows, err := utils.GetConn().Query(`SELECT f_name, l_name FROM user WHERE id=?`, v.Get("u"))
 		if err == nil {
 			washiURL := []byte(washigroup[1])
 			for userrows.Next() {
@@ -104,7 +102,7 @@ func door(w http.ResponseWriter, r *http.Request) {
 
 	hmbyte, _ := hex.DecodeString(hm)
 	if campaign.CheckMac(hmbyte, v.Get("c"), v) {
-		serverConn.Query(`INSERT INTO doors(cid,uid,linkid,ip,agent) VALUES(?,?,?,?,?)`,
+		utils.GetConn().Query(`INSERT INTO doors(cid,uid,linkid,ip,agent) VALUES(?,?,?,?,?)`,
 			v.Get("c"), v.Get("u"), v.Get("l"), r.Header.Get("X-Real-Ip"), r.Header.Get("User-Agent"))
 		serverLog("[door] Pass", r)
 
@@ -117,7 +115,7 @@ func door(w http.ResponseWriter, r *http.Request) {
 		if url, ok = serverlinksCache[serverlinksCacheKey]; ok {
 			log.Println("Using", match[1], "cache", serverlinksCacheKey, url)
 		} else {
-			rows, err := serverConn.Query(`SELECT url FROM links WHERE cid=? AND id=?`, v.Get("c"), v.Get("l"))
+			rows, err := utils.GetConn().Query(`SELECT url FROM links WHERE cid=? AND id=?`, v.Get("c"), v.Get("l"))
 			if err == nil {
 				for rows.Next() {
 					rows.Scan(&url)
@@ -148,9 +146,6 @@ var serverCmd = &cobra.Command{
 	Use:   "server",
 	Short: "Run tiny server for open, click trace",
 	Long:  `啟動一個 web server，來接收開信、點擊連結紀錄。`,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		serverConn = utils.GetConn()
-	},
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Run server ...")
 		http.HandleFunc("/read/", read)
