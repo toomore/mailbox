@@ -40,15 +40,6 @@ var (
 	campaignConn *sql.DB
 )
 
-func create() ([8]byte, [8]byte) {
-	id, seed := utils.GenSeed(), utils.GenSeed()
-	_, err := campaignConn.Query(fmt.Sprintf(`INSERT INTO campaign(id,seed) VALUES('%s', '%s')`, id, seed))
-	if err != nil {
-		log.Fatal("[cmd][campaign][read]", err)
-	}
-	return id, seed
-}
-
 func list() {
 	rows, err := campaignConn.Query(`SELECT id,seed,created,updated FROM campaign ORDER BY updated DESC`)
 	if err != nil {

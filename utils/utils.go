@@ -2,12 +2,10 @@ package utils
 
 import (
 	"crypto/hmac"
+	"crypto/rand"
 	"crypto/sha256"
 	"database/sql"
-	"encoding/hex"
 	"log"
-
-	"github.com/google/uuid"
 )
 
 const (
@@ -16,10 +14,9 @@ const (
 )
 
 // GenSeed is to gen seed
-func GenSeed() [8]byte {
-	var buf [8]byte
-	u := uuid.Must(uuid.NewRandom())
-	hex.Encode(buf[:], u[:4])
+func GenSeed() []byte {
+	var buf = make([]byte, 4)
+	rand.Read(buf)
 	return buf
 }
 
