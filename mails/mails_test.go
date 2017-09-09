@@ -29,7 +29,7 @@ func TestProcessSend(t *testing.T) {
 	ProcessSend(
 		[]byte(`<a href="https://toomore.net/">1</a><a href="{{WASHI}}https://toomore.net/{{/WASHI}}">2</a>`),
 		rows,
-		fmt.Sprintf("%s", cid),
+		fmt.Sprintf("%x", cid),
 		true,
 		"Test",
 		true,
@@ -45,7 +45,7 @@ func TestProcessSend(t *testing.T) {
 	ProcessSend(
 		[]byte(`<a href="https://toomore.net/">1</a><a href="{{WASHI}}https://toomore.net/{{/WASHI}}">2</a>`),
 		rows,
-		fmt.Sprintf("%s", cid),
+		fmt.Sprintf("%x", cid),
 		true,
 		"Test",
 		false,
