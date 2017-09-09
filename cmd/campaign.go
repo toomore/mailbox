@@ -250,7 +250,7 @@ var createCmd = &cobra.Command{
 	Long:  `新增一個 campaign 序號與加密種子，加密種子會在每次寄送電子報時使用。`,
 	Run: func(cmd *cobra.Command, args []string) {
 		id, seed := campaign.Create()
-		log.Printf("id: %s, seed: %s", id, seed)
+		log.Printf("id: %x, seed: %x", id, seed)
 	},
 }
 
