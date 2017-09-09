@@ -10,8 +10,8 @@ import (
 )
 
 func TestGenSeed(*testing.T) {
-	log.Printf("%s", GenSeed())
-	log.Printf("%s", GenSeed())
+	log.Printf("%x", GenSeed())
+	log.Printf("%x", GenSeed())
 }
 
 func TestGenHmac(t *testing.T) {
