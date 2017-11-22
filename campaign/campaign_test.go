@@ -11,7 +11,7 @@ import (
 
 func TestMakeMac(t *testing.T) {
 	campaignID, _ := Create()
-	cid := fmt.Sprintf("%s", campaignID)
+	cid := fmt.Sprintf("%x", campaignID)
 
 	data := url.Values{}
 	data.Set("name", "toomore")
@@ -23,8 +23,8 @@ func TestMakeMac(t *testing.T) {
 
 func TestCheckMac(t *testing.T) {
 	campaignID, seed := Create()
-	cid := fmt.Sprintf("%s", campaignID)
-	t.Logf("cid: %s, seed: %s", campaignID, seed)
+	cid := fmt.Sprintf("%x", campaignID)
+	t.Logf("cid: %x, seed: %x", campaignID, seed)
 
 	data := url.Values{}
 	data.Set("name", "toomore")
@@ -49,11 +49,11 @@ func TestMakeMacSeed(t *testing.T) {
 
 func TestGetSeed(t *testing.T) {
 	campaignID, seed := Create()
-	cid := fmt.Sprintf("%s", campaignID)
-	t.Logf("cid: %s, seed: %s", campaignID, seed)
+	cid := fmt.Sprintf("%x", campaignID)
+	t.Logf("cid: %x, seed: %x", campaignID, seed)
 
 	gseed := GetSeed(cid)
-	if fmt.Sprintf("%s", seed) != gseed {
+	if fmt.Sprintf("%x", seed) != gseed {
 		t.Error("Seed fail", seed, gseed)
 	}
 }

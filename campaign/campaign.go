@@ -55,9 +55,9 @@ func GetSeed(campaignID string) string {
 }
 
 // Create is to create a new campaign id and seed
-func Create() ([8]byte, [8]byte) {
+func Create() ([]byte, []byte) {
 	id, seed := utils.GenSeed(), utils.GenSeed()
-	rows, err := utils.GetConn().Query(fmt.Sprintf(`INSERT INTO campaign(id,seed) VALUES('%s', '%s')`, id, seed))
+	rows, err := utils.GetConn().Query(fmt.Sprintf(`INSERT INTO campaign(id,seed) VALUES('%x', '%x')`, id, seed))
 	defer rows.Close()
 
 	if err != nil {

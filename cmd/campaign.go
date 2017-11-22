@@ -40,15 +40,6 @@ var (
 	campaignConn *sql.DB
 )
 
-func create() ([8]byte, [8]byte) {
-	id, seed := utils.GenSeed(), utils.GenSeed()
-	_, err := campaignConn.Query(fmt.Sprintf(`INSERT INTO campaign(id,seed) VALUES('%s', '%s')`, id, seed))
-	if err != nil {
-		log.Fatal("[cmd][campaign][read]", err)
-	}
-	return id, seed
-}
-
 func list() {
 	rows, err := campaignConn.Query(`SELECT id,seed,created,updated FROM campaign ORDER BY updated DESC`)
 	if err != nil {
@@ -259,7 +250,7 @@ var createCmd = &cobra.Command{
 	Long:  `新增一個 campaign 序號與加密種子，加密種子會在每次寄送電子報時使用。`,
 	Run: func(cmd *cobra.Command, args []string) {
 		id, seed := campaign.Create()
-		log.Printf("id: %s, seed: %s", id, seed)
+		log.Printf("id: %x, seed: %x", id, seed)
 	},
 }
 
