@@ -12,4 +12,4 @@ docker run -it --rm --link mailbox-mariadb:MARIADB                             \
            -e "mailbox_ses_token=???"                                          \
            -e "mailbox_ses_sender=???"                                         \
            -e "mailbox_web_site=???"                                           \
-           golang:1.9.1 bash
+           golang:1.9.2 bash
