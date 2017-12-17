@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"text/tabwriter"
 	"time"
 
@@ -43,6 +44,7 @@ type user struct {
 	groups string
 	fname  string
 	lname  string
+	alive  int
 }
 
 func readCSV(path string) []user {
@@ -73,6 +75,14 @@ func readCSV(path string) []user {
 			for di, dv := range data[1:] {
 				result[di].lname = dv[i]
 			}
+		case "alive":
+			for di, dv := range data[1:] {
+				alive, err := strconv.Atoi(dv[i])
+				if err != nil {
+					log.Fatal("Alive type fail", err)
+				}
+				result[di].alive = alive
+			}
 		}
 	}
 	return result
@@ -91,6 +101,42 @@ func insertInto(data []user) {
 			log.Println("LastInsertId", insertID, "RowsAffected", rowAff)
 		} else {
 			log.Println("[Err]", err)
+		}
+	}
+}
+
+func updateUser(data []user) {
+	for _, v := range data {
+		rows, err := userConn.Query(`SELECT count(*) AS c FROM user WHERE groups=? AND email=?`, v.groups, v.email)
+		if err != nil {
+			log.Fatal("[cmd][updateUser][Prepare]", err)
+		}
+		var c int
+		for rows.Next() {
+			rows.Scan(&c)
+		}
+		if c > 0 {
+			if result, err := userConn.Exec(`UPDATE user SET f_name=?, l_name=?, alive=? WHERE groups=? AND email=?`,
+				v.fname, v.lname, v.alive, v.groups, v.email); err == nil {
+				insertID, _ := result.LastInsertId()
+				rowAff, _ := result.RowsAffected()
+				log.Println("[UPDATE] LastInsertId", insertID, "RowsAffected", rowAff, "email", v.email)
+			} else {
+				log.Println("[Err]", err)
+			}
+		} else {
+			if v.alive == 1 {
+				if result, err := userConn.Exec(`INSERT INTO user(email, groups, f_name, l_name, alive) VALUES(?,?,?,?,?)`,
+					v.email, v.groups, v.fname, v.lname, v.alive); err == nil {
+					insertID, _ := result.LastInsertId()
+					rowAff, _ := result.RowsAffected()
+					log.Println("[INSERT] LastInsertId", insertID, "RowsAffected", rowAff, "email", v.email)
+				} else {
+					log.Println("[Err]", err)
+				}
+			} else {
+				log.Println("[No INSERT alive=0 ]", v.email)
+			}
 		}
 	}
 }
@@ -154,6 +200,29 @@ var importCmd = &cobra.Command{
 	},
 }
 
+var updateCmd = &cobra.Command{
+	Use:   "update [csv path ...]",
+	Short: "Update user from csv",
+	Long: `更新使用者資訊，CSV 檔案需要 email, groups, f_name, l_name, alive 欄位， 支援
+多檔案匯入。`,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		userConn = utils.GetConn()
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		for n, path := range args {
+			log.Printf(">>> Read csv[%d]: `%s`", n, path)
+			if *userDryRun {
+				log.Println(">>> Dry Run data")
+				for i, v := range readCSV(path) {
+					fmt.Printf("%d %+v\n", i, v)
+				}
+			} else {
+				updateUser(readCSV(path))
+			}
+		}
+	},
+}
+
 var showCmd = &cobra.Command{
 	Use:   "show [groups ...]",
 	Short: "Show users",
@@ -174,8 +243,8 @@ var showCmd = &cobra.Command{
 }
 
 func init() {
-	userDryRun = importCmd.Flags().BoolP("dryRun", "d", false, "Dry run read csv data")
+	userDryRun = userCmd.PersistentFlags().BoolP("dryRun", "d", false, "Dry run read csv data")
 
 	RootCmd.AddCommand(userCmd)
-	userCmd.AddCommand(importCmd, showCmd)
+	userCmd.AddCommand(importCmd, showCmd, updateCmd)
 }
