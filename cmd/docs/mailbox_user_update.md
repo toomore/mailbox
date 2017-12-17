@@ -1,20 +1,20 @@
-## mailbox user import
+## mailbox user update
 
-Import user from csv
+Update user from csv
 
 ### Synopsis
 
-匯入使用者資訊，CSV 檔案需要 email, groups, f_name, l_name 欄位， 支援
+更新使用者資訊，CSV 檔案需要 email, groups, f_name, l_name, alive 欄位， 支援
 多檔案匯入。
 
 ```
-mailbox user import [csv path ...] [flags]
+mailbox user update [csv path ...] [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for import
+  -h, --help   help for update
 ```
 
 ### Options inherited from parent commands
