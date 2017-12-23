@@ -93,6 +93,7 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 			lname        string
 			msg          []byte
 			no           string
+			subjectbyte  []byte
 		)
 
 		rows.Scan(&no, &email, &fname, &lname)
@@ -107,6 +108,11 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 		ReplaceFname(&msg, fname)
 		ReplaceLname(&msg, lname)
 		ReplaceReader(&msg, cid, seed, no)
+
+		subjectbyte = []byte(subject)
+		ReplaceFname(&subjectbyte, fname)
+		ReplaceLname(&subjectbyte, lname)
+
 		if dryRun {
 			log.Printf("%s\n", msg)
 			var n int
@@ -118,13 +124,14 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 				n++
 				fmt.Printf("%02d => [W][%s] %s\n", n, v.LinkID, v.URL)
 			}
+			fmt.Printf("Subject: %s\n", subjectbyte)
 		} else {
 			wg.Add(1)
 			ql <- struct{}{}
 			go SendWG(GenParams(
 				fmt.Sprintf("%s %s <%s>", fname, lname, email),
 				string(msg),
-				subject), &wg)
+				string(subjectbyte)), &wg)
 		}
 		count++
 	}
