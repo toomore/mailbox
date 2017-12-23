@@ -55,6 +55,9 @@ func GenParams(to string, message string, subject string) *ses.SendEmailInput {
 	params.Destination.ToAddresses[0] = aws.String(to)
 	params.Message.Body.Html.Data = aws.String(message)
 	params.Message.Subject.Data = aws.String(subject)
+	if os.Getenv("mailbox_ses_replyto") != "" {
+		params.ReplyToAddresses = []*string{aws.String(os.Getenv("mailbox_ses_replyto"))}
+	}
 	return params
 }
 
