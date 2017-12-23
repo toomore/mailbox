@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	htmla    = regexp.MustCompile(`href="(http[s]?://[a-zA-z0-9/\.:?=,-@%()_&\+]+)"`)
+	htmla    = regexp.MustCompile(`href="(http[s]?://[a-zA-z0-9/\.:?=,-@%()_&\+#]+)"`)
 	washireg = regexp.MustCompile(`href="({{WASHI}}.+{{\/WASHI}})"`)
 )
 
