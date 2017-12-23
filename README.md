@@ -33,6 +33,7 @@ Required
     2. `mailbox_ses_token`：AWS SES Token
     3. `mailbox_ses_sender`：發送者的 `email`。如：`Toomore Chiang <toomore0929@gmail.com>`.
     4. `mailbox_web_site`：接收開信網址，不包含 `https` 與結尾。如：`open.example.com`.
+    5. `mailbox_ses_replyto`: (選擇) 回信時的信箱。
 3. Nginx
 
 Nginx config
