@@ -36,7 +36,7 @@ import (
 )
 
 var (
-	servercExpr      = regexp.MustCompile(`/(read|door|washi|vote)/([0-9a-z]+)`)
+	servercExpr      = regexp.MustCompile(`/(read|door|washi|vote)/([0-9a-zA-Z]+)`)
 	serverhttpPort   *string
 	serverlinksCache = make(map[string]string)
 )
