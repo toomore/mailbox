@@ -59,3 +59,14 @@ CREATE TABLE IF NOT EXISTS links (
     INDEX cid (cid ASC)
     ) CHARACTER SET 'utf8'
       COLLATE 'utf8_icelandic_ci';
+
+CREATE TABLE IF NOT EXISTS vote (
+    no INT NOT NULL AUTO_INCREMENT,
+    id CHAR(8) NOT NULL,
+    ip CHAR(15) NOT NULL,
+    agent CHAR(255) NOT NULL,
+    created DATETIME DEFAULT NOW(),
+    PRIMARY KEY (no),
+    INDEX id (id ASC)
+    ) CHARACTER SET 'utf8'
+      COLLATE 'utf8_icelandic_ci';

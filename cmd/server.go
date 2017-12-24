@@ -36,7 +36,7 @@ import (
 )
 
 var (
-	servercExpr      = regexp.MustCompile(`/(read|door|washi)/([0-9a-z]+)`)
+	servercExpr      = regexp.MustCompile(`/(read|door|washi|vote)/([0-9a-z]+)`)
 	serverhttpPort   *string
 	serverlinksCache = make(map[string]string)
 )
@@ -141,6 +141,19 @@ func door(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 }
 
+func vote(w http.ResponseWriter, r *http.Request) {
+	var hm string
+	match := servercExpr.FindStringSubmatch(r.Header.Get("X-Uri"))
+	if len(match) >= 3 {
+		hm = match[2]
+	}
+	utils.GetConn().Query(`INSERT INTO vote(id,ip,agent) VALUES(?,?,?)`,
+		hm, r.Header.Get("X-Real-Ip"), r.Header.Get("User-Agent"))
+
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("Thanks"))
+}
+
 // serverCmd represents the server command
 var serverCmd = &cobra.Command{
 	Use:   "server",
@@ -151,6 +164,7 @@ var serverCmd = &cobra.Command{
 		http.HandleFunc("/read/", read)
 		http.HandleFunc("/door/", door)
 		http.HandleFunc("/washi/", door)
+		http.HandleFunc("/vote/", vote)
 		log.Println("HTTP Port:", *serverhttpPort)
 		log.Println(http.ListenAndServe(*serverhttpPort, nil))
 	},
