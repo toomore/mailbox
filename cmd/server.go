@@ -142,6 +142,7 @@ func door(w http.ResponseWriter, r *http.Request) {
 }
 
 func vote(w http.ResponseWriter, r *http.Request) {
+	serverLog("[vote]", r)
 	var hm string
 	match := servercExpr.FindStringSubmatch(r.Header.Get("X-Uri"))
 	if len(match) >= 3 {
