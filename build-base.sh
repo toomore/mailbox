@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-docker pull alpine:3.7
-docker pull golang:1.10.2-alpine3.7
+docker pull alpine:3.8
+docker pull golang:1.11.1-alpine3.8
 docker build -t toomore/mailbox:base ./
