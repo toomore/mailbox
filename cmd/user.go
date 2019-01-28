@@ -27,6 +27,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"text/tabwriter"
 	"time"
 
@@ -61,19 +62,19 @@ func readCSV(path string) []user {
 		switch v {
 		case "email":
 			for di, dv := range data[1:] {
-				result[di].email = dv[i]
+				result[di].email = strings.TrimSpace(dv[i])
 			}
 		case "groups":
 			for di, dv := range data[1:] {
-				result[di].groups = dv[i]
+				result[di].groups = strings.TrimSpace(dv[i])
 			}
 		case "f_name":
 			for di, dv := range data[1:] {
-				result[di].fname = dv[i]
+				result[di].fname = strings.TrimSpace(dv[i])
 			}
 		case "l_name":
 			for di, dv := range data[1:] {
-				result[di].lname = dv[i]
+				result[di].lname = strings.TrimSpace(dv[i])
 			}
 		case "alive":
 			for di, dv := range data[1:] {
