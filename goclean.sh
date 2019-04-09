@@ -29,6 +29,7 @@ go test -race ./utils...
 
 echo "mode: count" > coverage.cov
 
+ls
 # Standard go tooling behavior is to ignore dirs with leading underscors
 for dir in $(find . -maxdepth 10 -not -path './.git*' -not -path '*/_*' -not -path './cmd' -not -path './cmd/docs' -not -path './sql' -type d);
 do
