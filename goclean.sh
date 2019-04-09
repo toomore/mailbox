@@ -12,6 +12,7 @@ set -e
 
 go get -v golang.org/x/lint/golint
 go get -v golang.org/x/tools/cmd/goimports
+go get -v ./...
 
 # Automatic checks
 test -z "$(gofmt -l -w ./     | tee /dev/stderr)"
