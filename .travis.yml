@@ -24,9 +24,6 @@ before_install:
     - go get -v golang.org/x/lint/golint
     - go get -v golang.org/x/tools/cmd/goimports
 
-install:
-    - eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=master bash)"
-
 before_script:
     - echo "USE mysql;\nUPDATE user SET password=PASSWORD('mailboxdbs') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
     - mysql -h MARIADB -uroot -pmailboxdbs < ./sql/database.sql
