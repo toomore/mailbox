@@ -46,3 +46,21 @@ jobs:
       - name: Test
         run: go test -v ./...
 
+      - name: Run more test
+        run: |
+          go get -v ./...
+          test -z "$(gofmt -l -w ./     | tee /dev/stderr)"
+          test -z "$(goimports -l -w ./ | tee /dev/stderr)"
+          test -z "$(golint ./...       | tee /dev/stderr)"
+          go test -race ./campaign...
+          go test -race ./mails...
+          go test -race ./reader...
+          go test -race ./utils...
+          sh ./goclean.sh
+          go test -v -bench=Bench -benchmem -run='Bench' ./mails
+          go test -v -bench=Bench -benchmem -run='Bench' ./utils
+          sh ./build-base.sh
+          sh ./build-min.sh
+          docker images
+          docker run -it --rm toomore/mailbox:cmd sh -c "mailbox -h"
+
