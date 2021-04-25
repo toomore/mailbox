@@ -3,6 +3,16 @@ name: Go
 on: push
 
 jobs:
+  semgrep:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: install semgrep
+        run: |
+          sudo pip install semgrep
+
+      - name: Run semgrep
+        run: |
+          semgrep --config=p/ci .
 
   build:
     runs-on: ubuntu-20.04
