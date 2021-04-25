@@ -31,7 +31,6 @@ jobs:
       - name: ps docker
         run: |
           docker ps --all
-          docker logs test_mariadb
 
       - name: init mariadb
         run: |
