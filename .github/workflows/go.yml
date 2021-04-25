@@ -14,7 +14,7 @@ jobs:
           - 3306:3306
         env:
           MYSQL_ROOT_PASSWORD: mailboxdbs
-        options: --name="test_mariadb"
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
 
     steps:
       - uses: actions/checkout@v2
@@ -35,7 +35,6 @@ jobs:
       - name: init mariadb
         run: |
           ls -alh
-          mysql -h localhost -P 3306 -uroot -pmailboxdbs
           mysql -h MARIADB -P 3306 -uroot -pmailboxdbs < ./sql/database.sql
           mysql -h MARIADB -P 3306 -uroot -pmailboxdbs mailbox < ./sql/tables.sql
 
