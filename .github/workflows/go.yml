@@ -25,6 +25,9 @@ jobs:
         sudo echo "127.0.0.1 MARIADB" | sudo tee -a /etc/hosts
         sudo cat /etc/hosts
 
+    - name: ps docker
+      run: docker ps --all
+
     - name: init mariadb
       run: |
         mysql -h MARIADB -uroot -pmailboxdbs < ./sql/database.sql
