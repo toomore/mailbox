@@ -1,0 +1,62 @@
+name: Go
+
+on: push
+
+jobs:
+
+  build:
+    runs-on: ubuntu-20.04
+
+    services:
+      mariadb:
+        image: mariadb:10.1.48-bionic
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_DATABASE: mailbox
+          MYSQL_ROOT_PASSWORD: mailboxdbs
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=4s --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Add hosts to /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 MARIADB" | sudo tee -a /etc/hosts
+          sudo cat /etc/hosts
+
+      - name: ps docker
+        run: |
+          docker ps --all
+
+      - name: init mariadb
+        run: |
+          ls -alh
+          mysql -h MARIADB -uroot -pmailboxdbs < ./sql/database.sql
+          mysql -h MARIADB -uroot -pmailboxdbs mailbox < ./sql/tables.sql
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.3
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
+
+      - name: Run more test
+        run: |
+          go get -v ./...
+          go test -race ./campaign...
+          go test -race ./mails...
+          go test -race ./reader...
+          go test -race ./utils...
+          sh ./goclean.sh
+          go test -v -bench=Bench -benchmem -run='Bench' ./mails
+          go test -v -bench=Bench -benchmem -run='Bench' ./utils
+          sh ./build-base.sh
+          sh ./build-min.sh
+          docker images
+

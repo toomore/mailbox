@@ -46,6 +46,7 @@ fi
 done
 
 go tool cover -func coverage.cov
+cat coverage.cov
 
 # To submit the test coverage result to coveralls.io,
 # use goveralls (https://github.com/mattn/goveralls)
