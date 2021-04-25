@@ -19,31 +19,34 @@ jobs:
         options: --name="test_mariadb"
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Add hosts to /etc/hosts
-      run: |
-        sudo echo "127.0.0.1 MARIADB" | sudo tee -a /etc/hosts
-        sudo cat /etc/hosts
+      - name: Shutdown Ubuntu MySQL (SUDO)
+        run: sudo service mysql stop
 
-    - name: ps docker
-      run: |
-        docker ps --all
-        docker logs test_mariadb
+      - name: Add hosts to /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 MARIADB" | sudo tee -a /etc/hosts
+          sudo cat /etc/hosts
 
-    - name: init mariadb
-      run: |
-        mysql -h MARIADB -uroot -pmailboxdbs < ./sql/database.sql
-        mysql -h MARIADB -uroot -pmailboxdbs mailbox < ./sql/tables.sql
+      - name: ps docker
+        run: |
+          docker ps --all
+          docker logs test_mariadb
 
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.16.3
+      - name: init mariadb
+        run: |
+          mysql -h MARIADB -uroot -pmailboxdbs < ./sql/database.sql
+          mysql -h MARIADB -uroot -pmailboxdbs mailbox < ./sql/tables.sql
 
-    - name: Build
-      run: go build -v ./...
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.3
 
-    - name: Test
-      run: go test -v ./...
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
 
