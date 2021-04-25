@@ -13,9 +13,7 @@ jobs:
         ports:
           - 3306:3306
         env:
-          MYSQL_USER: root
           MYSQL_ROOT_PASSWORD: mailboxdbs
-          MYSQL_DATABASE: mailbox
         options: --name="test_mariadb"
 
     steps:
@@ -36,8 +34,8 @@ jobs:
 
       - name: init mariadb
         run: |
-          mysql -h MARIADB -uroot -pmailboxdbs < ./sql/database.sql
-          mysql -h MARIADB -uroot -pmailboxdbs mailbox < ./sql/tables.sql
+          mysql -h MARIADB -P 3306 -uroot -pmailboxdbs < ./sql/database.sql
+          mysql -h MARIADB -P 3306 -uroot -pmailboxdbs mailbox < ./sql/tables.sql
 
       - name: Set up Go
         uses: actions/setup-go@v2
