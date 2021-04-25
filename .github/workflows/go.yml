@@ -16,6 +16,7 @@ jobs:
           MYSQL_USER: root
           MYSQL_ROOT_PASSWORD: mailboxdbs
           MYSQL_DATABASE: mailbox
+        options: --name="test_mariadb"
 
     steps:
     - uses: actions/checkout@v2
@@ -26,7 +27,9 @@ jobs:
         sudo cat /etc/hosts
 
     - name: ps docker
-      run: docker ps --all
+      run: |
+        docker ps --all
+        docker logs test_mariadb
 
     - name: init mariadb
       run: |
