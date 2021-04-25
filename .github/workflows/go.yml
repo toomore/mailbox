@@ -20,9 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Shutdown Ubuntu MySQL (SUDO)
-        run: sudo service mysql stop
-
       - name: Add hosts to /etc/hosts
         run: |
           sudo echo "127.0.0.1 MARIADB" | sudo tee -a /etc/hosts
@@ -35,8 +32,8 @@ jobs:
       - name: init mariadb
         run: |
           ls -alh
-          mysql -h MARIADB -P 3306 -uroot -pmailboxdbs < ./sql/database.sql
-          mysql -h MARIADB -P 3306 -uroot -pmailboxdbs mailbox < ./sql/tables.sql
+          mysql -h MARIADB -uroot -pmailboxdbs < ./sql/database.sql
+          mysql -h MARIADB -uroot -pmailboxdbs mailbox < ./sql/tables.sql
 
       - name: Set up Go
         uses: actions/setup-go@v2
