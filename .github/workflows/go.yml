@@ -10,6 +10,8 @@ jobs:
     services:
       mariadb:
         image: mariadb:10.1.48-bionic
+        ports:
+          - 3306
         env:
           MYSQL_USER: root
           MYSQL_ROOT_PASSWORD: mailboxdbs
@@ -22,6 +24,11 @@ jobs:
       run: |
         sudo echo "127.0.0.1 MARIADB" | sudo tee -a /etc/hosts
         sudo cat /etc/hosts
+
+    - name: init mariadb
+      run: |
+        mysql -h MARIADB -uroot -pmailboxdbs < ./sql/database.sql
+        mysql -h MARIADB -uroot -pmailboxdbs mailbox < ./sql/tables.sql
 
     - name: Set up Go
       uses: actions/setup-go@v2
