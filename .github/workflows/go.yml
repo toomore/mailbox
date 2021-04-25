@@ -6,8 +6,22 @@ jobs:
 
   build:
     runs-on: ubuntu-20.04
+
+    services:
+      mariadb:
+        image: mariadb:10.1.48-bionic
+        env:
+          MYSQL_USER: root
+          MYSQL_ROOT_PASSWORD: mailboxdbs
+          MYSQL_DATABASE: mailbox
+
     steps:
     - uses: actions/checkout@v2
+
+    - name: Add hosts to /etc/hosts
+      run: |
+        sudo echo "127.0.0.1 MARIADB" | sudo tee -a /etc/hosts
+        sudo cat /etc/hosts
 
     - name: Set up Go
       uses: actions/setup-go@v2
