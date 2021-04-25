@@ -49,6 +49,8 @@ jobs:
       - name: Run more test
         run: |
           go get -v ./...
+          go get -v golang.org/x/lint/golint
+          go get -v golang.org/x/tools/cmd/goimports
           test -z "$(gofmt -l -w ./     | tee /dev/stderr)"
           test -z "$(goimports -l -w ./ | tee /dev/stderr)"
           test -z "$(golint ./...       | tee /dev/stderr)"
@@ -62,5 +64,4 @@ jobs:
           sh ./build-base.sh
           sh ./build-min.sh
           docker images
-          docker run -it --rm toomore/mailbox:cmd sh -c "mailbox -h"
 
