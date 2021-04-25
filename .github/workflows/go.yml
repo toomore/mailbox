@@ -35,7 +35,7 @@ jobs:
       - name: init mariadb
         run: |
           ls -alh
-          mysql -h 127.0.0.1 -P 3306 -uroot -pmailboxdbs
+          mysql -h localhost -P 3306 -uroot -pmailboxdbs
           mysql -h MARIADB -P 3306 -uroot -pmailboxdbs < ./sql/database.sql
           mysql -h MARIADB -P 3306 -uroot -pmailboxdbs mailbox < ./sql/tables.sql
 
