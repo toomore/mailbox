@@ -44,7 +44,7 @@ jobs:
         run: |
           rm -rf go.mod
           rm -rf go.sum
-          go mod init
+          go mod init github.com/toomore/mailbox
           go get -v ./...
           go mod graph
 
