@@ -43,6 +43,9 @@ jobs:
       - name: Build
         run: go build -v ./...
 
+      - name: Show libs version
+        run: go mod graph
+
       - name: Test
         run: go test -v ./...
 
