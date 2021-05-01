@@ -95,6 +95,7 @@ func filteratags(rg *regexp.Regexp, body *[]byte, cid string) map[string]LinksDa
 		conn     = utils.GetConn()
 		result   = make(map[string]LinksData)
 		wg       sync.WaitGroup
+		lock     = sync.RWMutex{}
 	)
 	wg.Add(len(allATags))
 	for _, v := range allATags {
@@ -110,11 +111,13 @@ func filteratags(rg *regexp.Regexp, body *[]byte, cid string) map[string]LinksDa
 					rows.Scan(&linkID)
 				}
 			}
+			lock.Lock()
 			result[linkID] = LinksData{
 				Md5h:   md5hstr,
 				LinkID: linkID,
 				URL:    url,
 			}
+			lock.Unlock()
 			wg.Done()
 		}(v[1])
 	}
