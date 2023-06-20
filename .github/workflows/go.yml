@@ -5,11 +5,11 @@ on: push
 jobs:
 
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     services:
       mariadb:
-        image: mariadb:10.1.48-bionic
+        image: mariadb:10.11.4-jammy
         ports:
           - 3306:3306
         env:
@@ -36,9 +36,9 @@ jobs:
           mysql -h MARIADB -uroot -pmailboxdbs mailbox < ./sql/tables.sql
 
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.16.3
+          go-version: 1.20.5
 
       - name: Build
         run: go build -v ./...
@@ -59,4 +59,3 @@ jobs:
           sh ./build-base.sh
           sh ./build-min.sh
           docker images
-
