@@ -1,4 +1,4 @@
-FROM alpine:3.13.5
+FROM alpine:3.18.2
 MAINTAINER Toomore Chiang <toomore0929@gmail.com>
 
 WORKDIR /bin
