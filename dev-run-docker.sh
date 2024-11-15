@@ -13,4 +13,4 @@ docker run -it --rm --link mailbox-mariadb:MARIADB                             \
            -e "mailbox_ses_sender=???"                                         \
            -e "mailbox_ses_replyto=???"                                        \
            -e "mailbox_web_site=???"                                           \
-           golang:1.22.2-alpine3.20 bash
+           golang:1.22.2-alpine3.19 bash
