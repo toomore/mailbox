@@ -3,13 +3,12 @@ name: Go
 on: push
 
 jobs:
-
   build:
     runs-on: ubuntu-22.04
 
     services:
       mariadb:
-        image: mariadb:10.11.4-jammy
+        image: mariadb:10.11.10-jammy
         ports:
           - 3306:3306
         env:
