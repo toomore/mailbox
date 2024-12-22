@@ -1,4 +1,4 @@
-FROM golang:1.22.2-alpine3.19
+FROM golang:1.22.2-alpine3.20
 
 WORKDIR /go/src/github.com/toomore/mailbox/
 
