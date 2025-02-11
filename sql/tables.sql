@@ -1,72 +1,67 @@
-CREATE TABLE IF NOT EXISTS campaign (
-    id CHAR(8) NOT NULL UNIQUE,
-    seed CHAR(8) NOT NULL,
-    created DATETIME DEFAULT NOW(),
-    updated DATETIME DEFAULT NOW() ON UPDATE NOW()
-    ) CHARACTER SET 'utf8' 
-      COLLATE 'utf8_icelandic_ci';
+CREATE TABLE IF NOT EXISTS campaign(
+  id char(8) NOT NULL UNIQUE,
+  seed char(8) NOT NULL,
+  created DATETIME DEFAULT NOW(),
+  updated DATETIME DEFAULT NOW() ON UPDATE NOW()) character
+SET 'utf8' COLLATE 'utf8_icelandic_ci';
 
-CREATE TABLE IF NOT EXISTS user (
-    id INT NOT NULL AUTO_INCREMENT,
-    email VARCHAR(64) NOT NULL,
-    groups VARCHAR(64) NOT NULL,
-    f_name VARCHAR(32) NOT NULL,
-    l_name VARCHAR(32) not NULL,
-    created DATETIME DEFAULT NOW(),
-    updated DATETIME DEFAULT NOW() ON UPDATE NOW(),
-    alive BOOL DEFAULT true,
-    PRIMARY KEY (id),
-    UNIQUE KEY email_groups (email, groups),
-    INDEX groups (groups ASC)
-    ) CHARACTER SET 'utf8'
-      COLLATE 'utf8_icelandic_ci';
+CREATE TABLE IF NOT EXISTS USER (
+  id int NOT NULL AUTO_INCREMENT,
+  email varchar(64) NOT NULL,
+  groups VARCHAR(64) NOT NULL,
+  f_name varchar(32) NOT NULL,
+  l_name varchar(32) NOT NULL,
+  created DATETIME DEFAULT NOW(),
+  updated DATETIME DEFAULT NOW() ON UPDATE NOW(),
+  alive bool DEFAULT TRUE,
+  PRIMARY KEY (id),
+  UNIQUE KEY email_groups(email, GROUPS),
+  INDEX GROUPS (GROUPS ASC)) character
+SET 'utf8' COLLATE 'utf8_icelandic_ci';
 
-CREATE TABLE IF NOT EXISTS reader (
-    no INT NOT NULL AUTO_INCREMENT,
-    uid INT NOT NULL,
-    cid CHAR(8) NOT NULL,
-    ip CHAR(15) NOT NULL,
-    agent CHAR(255) NOT NULL,
-    created DATETIME DEFAULT NOW(),
-    PRIMARY KEY (no),
-    INDEX uid (uid ASC),
-    INDEX cid (cid ASC)
-    ) CHARACTER SET 'utf8'
-      COLLATE 'utf8_icelandic_ci';
+CREATE TABLE IF NOT EXISTS reader(
+  no INT NOT NULL AUTO_INCREMENT,
+  uid int NOT NULL,
+  cid char(8) NOT NULL,
+  ip char(15) NOT NULL,
+  agent char(255) NOT NULL,
+  created DATETIME DEFAULT NOW(),
+  PRIMARY KEY (NO),
+  INDEX uid(uid ASC),
+  INDEX cid(cid ASC)) character
+SET 'utf8' COLLATE 'utf8_icelandic_ci';
 
-CREATE TABLE IF NOT EXISTS doors (
-    no INT NOT NULL AUTO_INCREMENT,
-    uid INT NOT NULL,
-    cid CHAR(8) NOT NULL,
-    linkid CHAR(8) NOT NULL,
-    ip CHAR(15) NOT NULL,
-    agent CHAR(255) NOT NULL,
-    created DATETIME DEFAULT NOW(),
-    PRIMARY KEY (no),
-    INDEX uid (uid ASC),
-    INDEX linkid (linkid ASC),
-    INDEX cid (cid ASC)
-    ) CHARACTER SET 'utf8'
-      COLLATE 'utf8_icelandic_ci';
+CREATE TABLE IF NOT EXISTS doors(
+  no INT NOT NULL AUTO_INCREMENT,
+  uid int NOT NULL,
+  cid char(8) NOT NULL,
+  linkid char(8) NOT NULL,
+  ip char(15) NOT NULL,
+  agent char(255) NOT NULL,
+  created DATETIME DEFAULT NOW(),
+  PRIMARY KEY (NO),
+  INDEX uid(uid ASC),
+  INDEX linkid(linkid ASC),
+  INDEX cid(cid ASC)) character
+SET 'utf8' COLLATE 'utf8_icelandic_ci';
 
-CREATE TABLE IF NOT EXISTS links (
-    id CHAR(8) NOT NULL,
-    cid CHAR(8) NOT NULL,
-    url TEXT NOT NULL,
-    urlhash CHAR(32) NOT NULL,
-    created DATETIME DEFAULT NOW(),
-    UNIQUE KEY cid_urlhash (cid, urlhash),
-    INDEX cid (cid ASC)
-    ) CHARACTER SET 'utf8'
-      COLLATE 'utf8_icelandic_ci';
+CREATE TABLE IF NOT EXISTS links(
+  id char(8) NOT NULL,
+  cid char(8) NOT NULL,
+  url text NOT NULL,
+  urlhash char(32) NOT NULL,
+  created DATETIME DEFAULT NOW(),
+  UNIQUE KEY cid_urlhash(cid, urlhash),
+  INDEX cid(cid ASC)) character
+SET 'utf8' COLLATE 'utf8_icelandic_ci';
 
-CREATE TABLE IF NOT EXISTS vote (
-    no INT NOT NULL AUTO_INCREMENT,
-    id CHAR(8) NOT NULL,
-    ip CHAR(15) NOT NULL,
-    agent CHAR(255) NOT NULL,
-    created DATETIME DEFAULT NOW(),
-    PRIMARY KEY (no),
-    INDEX id (id ASC)
-    ) CHARACTER SET 'utf8'
-      COLLATE 'utf8_icelandic_ci';
+CREATE TABLE IF NOT EXISTS vote(
+  no INT NOT NULL AUTO_INCREMENT,
+  id char(8) NOT NULL,
+  ip char(15) NOT NULL,
+  agent char(255) NOT NULL,
+  created DATETIME DEFAULT NOW(),
+  PRIMARY KEY (NO),
+  INDEX id(id ASC)) character
+SET 'utf8' COLLATE 'utf8_icelandic_ci';
+
