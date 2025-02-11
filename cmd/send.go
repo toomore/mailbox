@@ -23,7 +23,7 @@ package cmd
 import (
 	"database/sql"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -39,6 +39,7 @@ var (
 	sendGroups      *string
 	sendLimit       *int
 	sendPath        *string
+	sendTextPath    *string
 	sendReplaceLink *bool
 	sendSubject     *string
 	sendUID         *string
@@ -60,10 +61,21 @@ var sendCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal("[cmd][send][open] ", err)
 		}
-		body, err := ioutil.ReadAll(file)
+
+		file_text, err := os.Open(*sendTextPath)
+		if err != nil {
+			log.Fatal("[cmd][send][open] ", err)
+		}
+
+		body, err := io.ReadAll(file)
 		if err != nil {
 			log.Fatal("[cmd][send][ReadAll] ", err)
 		}
+		body_text, err := io.ReadAll(file_text)
+		if err != nil {
+			log.Fatal("[cmd][send][ReadAll] ", err)
+		}
+
 		var rows *sql.Rows
 		if *sendUID != "" {
 			uids := strings.Split(*sendUID, ",")
@@ -79,7 +91,7 @@ var sendCmd = &cobra.Command{
 			log.Fatal("[cmd][send][Query] ", err)
 		}
 
-		mails.ProcessSend(body, rows, *sendCID, *sendReplaceLink, *sendSubject, *sendDryRun, *sendLimit)
+		mails.ProcessSend(body, body_text, rows, *sendCID, *sendReplaceLink, *sendSubject, *sendDryRun, *sendLimit)
 	},
 }
 
@@ -89,6 +101,7 @@ func init() {
 	sendDryRun = sendCmd.Flags().BoolP("dryrun", "d", false, "Dry run")
 	sendGroups = sendCmd.Flags().StringP("groups", "g", "", "User groups")
 	sendPath = sendCmd.Flags().StringP("path", "p", "", "HTML file path")
+	sendTextPath = sendCmd.Flags().StringP("text", "t", "", "Plain file path")
 	sendReplaceLink = sendCmd.Flags().Bool("rl", true, "Replace A tag links")
 	sendSubject = sendCmd.Flags().StringP("subject", "s", "", "Mail subject")
 	sendLimit = sendCmd.Flags().IntP("limit", "", 7, "Send concurrency limit")

@@ -9,7 +9,7 @@ import (
 )
 
 func TestGenParams(t *testing.T) {
-	t.Logf("%+v", GenParams("toomore0929@gmail.com", "message", "[Test]"))
+	t.Logf("%+v", GenParams("toomore0929@gmail.com", "message", "[Test]", "text message"))
 }
 
 func TestProcessSend(t *testing.T) {
@@ -28,6 +28,7 @@ func TestProcessSend(t *testing.T) {
 	// Test with dry run
 	ProcessSend(
 		[]byte(`<a href="https://toomore.net/">1</a><a href="{{WASHI}}https://toomore.net/{{/WASHI}}">2</a>`),
+		[]byte(`<https://toomore.net> {{WASHI}}https://toomore.net/{{/WASHI}}`),
 		rows,
 		fmt.Sprintf("%x", cid),
 		true,
@@ -44,6 +45,7 @@ func TestProcessSend(t *testing.T) {
 	// Test Run
 	ProcessSend(
 		[]byte(`<a href="https://toomore.net/">1</a><a href="{{WASHI}}https://toomore.net/{{/WASHI}}">2</a>`),
+		[]byte(`<https://toomore.net> {{WASHI}}https://toomore.net/{{/WASHI}}`),
 		rows,
 		fmt.Sprintf("%x", cid),
 		true,

@@ -39,6 +39,10 @@ func baseParams() *ses.SendEmailInput {
 					Data:    aws.String(""),
 					Charset: aws.String("UTF-8"),
 				},
+				Text: &ses.Content{
+					Data:    aws.String(""),
+					Charset: aws.String("UTF-8"),
+				},
 			},
 			Subject: &ses.Content{
 				Data:    aws.String(""),
@@ -50,10 +54,11 @@ func baseParams() *ses.SendEmailInput {
 }
 
 // GenParams is to gen email params
-func GenParams(to string, message string, subject string) *ses.SendEmailInput {
+func GenParams(to string, message string, subject string, text string) *ses.SendEmailInput {
 	params := baseParams()
 	params.Destination.ToAddresses[0] = aws.String(to)
 	params.Message.Body.Html.Data = aws.String(message)
+	params.Message.Body.Text.Data = aws.String(text)
 	params.Message.Subject.Data = aws.String(subject)
 	if os.Getenv("mailbox_ses_replyto") != "" {
 		params.ReplyToAddresses = []*string{aws.String(os.Getenv("mailbox_ses_replyto"))}
@@ -81,7 +86,7 @@ func SendWG(params *ses.SendEmailInput, wg *sync.WaitGroup) {
 }
 
 // ProcessSend is to start send from rows
-func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subject string, dryRun bool, limit int) {
+func ProcessSend(body []byte, text []byte, rows *sql.Rows, cid string, replaceLink bool, subject string, dryRun bool, limit int) {
 
 	var seed = campaign.GetSeed(cid)
 	var count int
@@ -95,6 +100,7 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 			fname        string
 			lname        string
 			msg          []byte
+			msg_text     []byte
 			no           string
 			subjectbyte  []byte
 		)
@@ -102,15 +108,25 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 		rows.Scan(&no, &email, &fname, &lname)
 
 		msg = body
+		msg_text = text
 		if replaceLink {
 			allATags = FilterATags(&msg, cid)
 			ReplaceATag(&msg, allATags, cid, seed, no)
 			allWashiTags = FilterWashiTags(&msg, cid)
 			ReplaceWashiTag(&msg, allWashiTags, cid, seed, no)
+
+			allATags = FilterATags(&msg_text, cid)
+			ReplaceATag(&msg_text, allATags, cid, seed, no)
+			allWashiTags = FilterWashiTags(&msg_text, cid)
+			ReplaceWashiTag(&msg_text, allWashiTags, cid, seed, no)
 		}
 		ReplaceFname(&msg, fname)
 		ReplaceLname(&msg, lname)
 		ReplaceReader(&msg, cid, seed, no)
+
+		ReplaceFname(&msg_text, fname)
+		ReplaceLname(&msg_text, lname)
+		ReplaceReader(&msg_text, cid, seed, no)
 
 		subjectbyte = []byte(subject)
 		ReplaceFname(&subjectbyte, fname)
@@ -118,6 +134,7 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 
 		if dryRun {
 			log.Printf("%s\n", msg)
+			log.Printf("%s\n", msg_text)
 			var n int
 			for _, v := range allATags {
 				n++
@@ -134,7 +151,9 @@ func ProcessSend(body []byte, rows *sql.Rows, cid string, replaceLink bool, subj
 			go SendWG(GenParams(
 				fmt.Sprintf("%s %s <%s>", fname, lname, email),
 				string(msg),
-				string(subjectbyte)), &wg)
+				string(subjectbyte),
+				string(msg_text),
+			), &wg)
 		}
 		count++
 	}
