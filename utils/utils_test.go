@@ -29,15 +29,27 @@ func TestGenHmac(t *testing.T) {
 
 func TestGetConn(t *testing.T) {
 	rows, err := GetConn().Query("select id from campaign;")
-	defer rows.Close()
-
 	if err != nil {
 		t.Log(err)
 	}
+	defer rows.Close()
 	var id string
 	for rows.Next() {
 		rows.Scan(&id)
 		t.Log(id)
+	}
+}
+
+func TestFormatEmail(t *testing.T) {
+	simple := FormatEmail("toomore.chiang+123@gmail.com")
+	if simple != "toomorechiang@gmail.com" {
+		t.Fatal(simple)
+	}
+}
+
+func BenchmarkFormatEmail(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		FormatEmail("toomore.chiang+123@gmail.com")
 	}
 }
 

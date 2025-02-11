@@ -6,6 +6,8 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"log"
+	"regexp"
+	"strings"
 )
 
 const (
@@ -40,4 +42,17 @@ func GetConn() *sql.DB {
 	}
 
 	return conn
+}
+
+// FormatEmail is to make mail address unique
+func FormatEmail(email string) string {
+	re := regexp.MustCompile(`\+[^@]*`)
+	email = re.ReplaceAllString(strings.TrimSpace(strings.ToLower(email)), "")
+
+	parts := strings.Split(email, "@")
+	localPart, domain := parts[0], parts[1]
+
+	localPart = strings.ReplaceAll(localPart, ".", "")
+
+	return localPart + "@" + domain
 }
