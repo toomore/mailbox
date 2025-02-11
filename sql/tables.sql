@@ -8,6 +8,7 @@ SET 'utf8' COLLATE 'utf8_icelandic_ci';
 CREATE TABLE IF NOT EXISTS USER (
   id int NOT NULL AUTO_INCREMENT,
   email varchar(64) NOT NULL,
+  email_uni varchar(64) NOT NULL,
   groups VARCHAR(64) NOT NULL,
   f_name varchar(32) NOT NULL,
   l_name varchar(32) NOT NULL,
@@ -15,7 +16,7 @@ CREATE TABLE IF NOT EXISTS USER (
   updated DATETIME DEFAULT NOW() ON UPDATE NOW(),
   alive bool DEFAULT TRUE,
   PRIMARY KEY (id),
-  UNIQUE KEY email_groups(email, GROUPS),
+  UNIQUE KEY email_groups(email_uni, GROUPS),
   INDEX GROUPS (GROUPS ASC)) character
 SET 'utf8' COLLATE 'utf8_icelandic_ci';
 

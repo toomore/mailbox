@@ -41,11 +41,12 @@ var (
 )
 
 type user struct {
-	email  string
-	groups string
-	fname  string
-	lname  string
-	alive  int
+	email     string
+	email_uni string
+	groups    string
+	fname     string
+	lname     string
+	alive     int
 }
 
 func readCSV(path string) []user {
@@ -63,6 +64,7 @@ func readCSV(path string) []user {
 		case "email":
 			for di, dv := range data[1:] {
 				result[di].email = strings.TrimSpace(dv[i])
+				result[di].email_uni = utils.FormatEmail(dv[i])
 			}
 		case "groups":
 			for di, dv := range data[1:] {
@@ -90,13 +92,13 @@ func readCSV(path string) []user {
 }
 
 func insertInto(data []user) {
-	stmt, err := userConn.Prepare(`INSERT INTO user(email,groups,f_name,l_name)
-	                           VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE f_name=?, l_name=?`)
+	stmt, err := userConn.Prepare(`INSERT INTO user(email,email_uni,groups,f_name,l_name)
+	                           VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE f_name=?, l_name=?, email=?`)
 	if err != nil {
 		log.Fatal("[cmd][insertInto][Prepare]", err)
 	}
 	for _, v := range data {
-		if result, err := stmt.Exec(v.email, v.groups, v.fname, v.lname, v.fname, v.lname); err == nil {
+		if result, err := stmt.Exec(v.email, v.email_uni, v.groups, v.fname, v.lname, v.fname, v.lname, v.email); err == nil {
 			insertID, _ := result.LastInsertId()
 			rowAff, _ := result.RowsAffected()
 			log.Println("LastInsertId", insertID, "RowsAffected", rowAff)
@@ -108,7 +110,7 @@ func insertInto(data []user) {
 
 func updateUser(data []user) {
 	for _, v := range data {
-		rows, err := userConn.Query(`SELECT count(*) AS c FROM user WHERE groups=? AND email=?`, v.groups, v.email)
+		rows, err := userConn.Query(`SELECT count(*) AS c FROM user WHERE groups=? AND email_uni=?`, v.groups, v.email_uni)
 		if err != nil {
 			log.Fatal("[cmd][updateUser][Prepare]", err)
 		}
@@ -117,55 +119,56 @@ func updateUser(data []user) {
 			rows.Scan(&c)
 		}
 		if c > 0 {
-			if result, err := userConn.Exec(`UPDATE user SET f_name=?, l_name=?, alive=? WHERE groups=? AND email=?`,
-				v.fname, v.lname, v.alive, v.groups, v.email); err == nil {
+			if result, err := userConn.Exec(`UPDATE user SET f_name=?, l_name=?, alive=?, email=? WHERE groups=? AND email_uni=?`,
+				v.fname, v.lname, v.alive, v.email, v.groups, v.email_uni); err == nil {
 				insertID, _ := result.LastInsertId()
 				rowAff, _ := result.RowsAffected()
-				log.Println("[UPDATE] LastInsertId", insertID, "RowsAffected", rowAff, "email", v.email)
+				log.Println("[UPDATE] LastInsertId", insertID, "RowsAffected", rowAff, "email", v.email, "email_uni", v.email_uni)
 			} else {
 				log.Println("[Err]", err)
 			}
 		} else {
 			if v.alive == 1 {
-				if result, err := userConn.Exec(`INSERT INTO user(email, groups, f_name, l_name, alive) VALUES(?,?,?,?,?)`,
-					v.email, v.groups, v.fname, v.lname, v.alive); err == nil {
+				if result, err := userConn.Exec(`INSERT INTO user(email, email_uni, groups, f_name, l_name, alive) VALUES(?,?,?,?,?,?)`,
+					v.email, v.email_uni, v.groups, v.fname, v.lname, v.alive); err == nil {
 					insertID, _ := result.LastInsertId()
 					rowAff, _ := result.RowsAffected()
-					log.Println("[INSERT] LastInsertId", insertID, "RowsAffected", rowAff, "email", v.email)
+					log.Println("[INSERT] LastInsertId", insertID, "RowsAffected", rowAff, "email", v.email, "email_uni", v.email_uni)
 				} else {
 					log.Println("[Err]", err)
 				}
 			} else {
-				log.Println("[No INSERT alive=0 ]", v.email)
+				log.Println("[No INSERT alive=0 ]", v.email, v.email_uni)
 			}
 		}
 	}
 }
 
 func readUser(group string) {
-	rows, err := userConn.Query(`SELECT id,email,f_name,l_name,alive,created FROM user WHERE alive=1 AND groups=?`, group)
+	rows, err := userConn.Query(`SELECT id,email,email_uni,f_name,l_name,alive,created FROM user WHERE alive=1 AND groups=?`, group)
 	if err != nil {
 		log.Fatal("[cmd][readUser][Query]", err)
 	}
 	defer rows.Close()
 	var (
-		id      string
-		email   string
-		fname   string
-		lname   string
-		created time.Time
-		alive   int
+		id        string
+		email     string
+		email_uni string
+		fname     string
+		lname     string
+		created   time.Time
+		alive     int
 	)
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
-	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", "id", "email", "fname", "lname", "alive", "created")
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "id", "email", "email_uni", "fname", "lname", "alive", "created")
 	for rows.Next() {
-		if err := rows.Scan(&id, &email, &fname, &lname, &alive, &created); err != nil {
+		if err := rows.Scan(&id, &email, &email_uni, &fname, &lname, &alive, &created); err != nil {
 			log.Println(err)
 		} else {
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%d\t%s\n", id, email, fname, lname, alive, created)
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%d\t%s\n", id, email, email_uni, fname, lname, alive, created)
 		}
 	}
-	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", "id", "email", "fname", "lname", "alive", "created")
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "id", "email", "email_uni", "fname", "lname", "alive", "created")
 	w.Flush()
 }
 
