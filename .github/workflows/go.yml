@@ -33,6 +33,8 @@ jobs:
           ls -alh
           mysql -h MARIADB -uroot -pmailboxdbs < ./sql/database.sql
           mysql -h MARIADB -uroot -pmailboxdbs mailbox < ./sql/tables.sql
+          mysql -h MARIADB -uroot -pmailboxdbs -e "SHOW DATABASES;"
+          mysql -h MARIADB -uroot -pmailboxdbs -e "SHOW TABLES;" mailbox
 
       - name: Set up Go
         uses: actions/setup-go@v4
