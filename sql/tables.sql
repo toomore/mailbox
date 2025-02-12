@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS campaign(
   updated DATETIME DEFAULT NOW() ON UPDATE NOW()) character
 SET 'utf8' COLLATE 'utf8_icelandic_ci';
 
-CREATE TABLE IF NOT EXISTS USER (
+CREATE TABLE IF NOT EXISTS user (
   id int NOT NULL AUTO_INCREMENT,
   email varchar(64) NOT NULL,
   email_uni varchar(64) NOT NULL,
