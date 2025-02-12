@@ -57,6 +57,8 @@ jobs:
           sh ./goclean.sh
           go test -v -bench=Bench -benchmem -run='Bench' ./mails
           go test -v -bench=Bench -benchmem -run='Bench' ./utils
+      - name: Build image
+        run: |
           sh ./build-base.sh
           sh ./build-min.sh
           docker images
