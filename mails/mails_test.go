@@ -14,7 +14,7 @@ func TestGenParams(t *testing.T) {
 
 func TestProcessSend(t *testing.T) {
 	stmt, err := utils.GetConn().Prepare(`INSERT INTO user(email,email_uni,groups,f_name,l_name)
-	                           VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE f_name=?, l_name=?`)
+	                           VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE f_name=?, l_name=?`)
 	if err != nil {
 		t.Fatal(err)
 	}
