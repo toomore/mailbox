@@ -13,12 +13,12 @@ func TestGenParams(t *testing.T) {
 }
 
 func TestProcessSend(t *testing.T) {
-	stmt, err := utils.GetConn().Prepare(`INSERT INTO user(email,groups,f_name,l_name)
+	stmt, err := utils.GetConn().Prepare(`INSERT INTO user(email,email_uni,groups,f_name,l_name)
 	                           VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE f_name=?, l_name=?`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	stmt.Exec("toomore0929@gmail.com", "test", "Toomore", "Chiang", "Toomore", "Chiang")
+	stmt.Exec("toomore0929+123@gmail.com", "toomore0929@gmail.com", "test", "Toomore", "Chiang", "Toomore", "Chiang")
 	rows, err := utils.GetConn().Query("select id,email,f_name,l_name from user where groups='test'")
 
 	if err != nil {
@@ -37,7 +37,7 @@ func TestProcessSend(t *testing.T) {
 		4)
 
 	stmt.Exec("to", "test2", "Toomore", "Chiang", "Toomore", "Chiang")
-	rows, err = utils.GetConn().Query("select id,email,f_name,l_name from user where groups='test2'")
+	rows, err = utils.GetConn().Query("select id,email,email_uni,f_name,l_name from user where groups='test2'")
 
 	if err != nil {
 		t.Fatal(err)
