@@ -2,7 +2,7 @@ Mailbox CMD [![GoDoc](https://godoc.org/github.com/toomore/mailbox/cmd?status.sv
 ============
 
 四個主要的命令來運作 **Mailbox**，`mailbox campaign`, `mailbox user`,
-`mailbox sender`, `mailbox server`
+`mailbox send`, `mailbox server`
 
 也提供將程式編譯後再放入 `alpine`。
 
@@ -15,7 +15,7 @@ CMD
 ### `mailbox user`
 匯入訂閱者的資訊。
 
-### `mailbox sender`
+### `mailbox send`
 發送電子報，以 **HTML** 格式發送。
 
 ### `mailbox server`

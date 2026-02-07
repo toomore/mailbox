@@ -36,7 +36,7 @@ var gendocCmd = &cobra.Command{
 			RootCmd.GenBashCompletionFile("./mailbox")
 			cmd.Println("Gen Bash Completion File ...")
 		} else {
-			doc.GenMarkdownTree(RootCmd, "./")
+			doc.GenMarkdownTree(RootCmd, "./cmd/docs")
 			cmd.Println("Gen Markdown Tree ...")
 		}
 	},
