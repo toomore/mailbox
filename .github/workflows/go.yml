@@ -17,7 +17,7 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=4s --health-retries=5
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Add hosts to /etc/hosts
         run: |
@@ -44,17 +44,17 @@ jobs:
       - name: Build
         run: go build -v ./...
 
+      - name: Vet
+        run: go vet ./...
+
       - name: Test
         run: go test -v ./...
 
       - name: Run more test
         run: |
           go get -v ./...
-          go test -race ./campaign...
-          go test -race ./mails...
-          go test -race ./reader...
-          go test -race ./utils...
-          sh ./goclean.sh
+          go test -race -coverprofile=coverage.out -covermode=atomic ./...
+          go tool cover -func=coverage.out
           go test -v -bench=Bench -benchmem -run='Bench' ./mails
           go test -v -bench=Bench -benchmem -run='Bench' ./utils
       - name: Build image

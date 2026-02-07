@@ -91,6 +91,10 @@ func door(w http.ResponseWriter, r *http.Request) {
 	v, _ := url.ParseQuery(r.Header.Get("X-Args"))
 
 	match := servercExpr.FindStringSubmatch(r.Header.Get("X-Uri"))
+	if match == nil || len(match) < 2 {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 	if match[1] == "door" {
 		if v.Get("t") != "a" {
 			log.Println("No `t`", v.Get("t"))

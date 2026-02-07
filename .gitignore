@@ -1,4 +1,5 @@
 Makefile
+cmd/docs/mailbox_completion*.md
 csv/
 dev-run-docker-dev.sh
 dev-run-docker-test.sh

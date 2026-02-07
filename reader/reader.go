@@ -1,8 +1,15 @@
 package reader
 
-import "github.com/toomore/mailbox/utils"
+import (
+	"log"
+
+	"github.com/toomore/mailbox/utils"
+)
 
 // Save is to save read record
 func Save(cid, uid, ip, agent string) {
-	utils.GetConn().Query(`INSERT INTO reader(cid,uid,ip,agent) VALUES(?,?,?,?)`, cid, uid, ip, agent)
+	_, err := utils.GetConn().Exec(`INSERT INTO reader(cid,uid,ip,agent) VALUES(?,?,?,?)`, cid, uid, ip, agent)
+	if err != nil {
+		log.Println("[reader][Save] ", err)
+	}
 }
