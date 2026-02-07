@@ -114,6 +114,7 @@ func updateUser(data []user) {
 		if err != nil {
 			log.Fatal("[cmd][updateUser][Prepare]", err)
 		}
+		defer rows.Close()
 		var c int
 		for rows.Next() {
 			rows.Scan(&c)

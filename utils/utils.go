@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"log"
+	"os"
 	"regexp"
 	"strings"
 	"sync"
@@ -20,6 +21,14 @@ var (
 	dbOnce     sync.Once
 	dbInstance *sql.DB
 )
+
+// getDSN returns DSN from env MAILBOX_DB_DSN or default SQLPATH
+func getDSN() string {
+	if s := os.Getenv("MAILBOX_DB_DSN"); s != "" {
+		return s
+	}
+	return SQLPATH
+}
 
 // GenSeed is to gen seed
 func GenSeed() []byte {
@@ -39,7 +48,7 @@ func GenHmac(key, message []byte) []byte {
 func GetConn() *sql.DB {
 	dbOnce.Do(func() {
 		var err error
-		dbInstance, err = sql.Open("mysql", SQLPATH)
+		dbInstance, err = sql.Open("mysql", getDSN())
 		if err != nil {
 			log.Fatal("[GetConn] ", err)
 		}

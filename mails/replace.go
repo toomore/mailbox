@@ -107,8 +107,11 @@ func filteratags(rg *regexp.Regexp, body *[]byte, cid string) map[string]LinksDa
 			_, err := conn.Query(`INSERT INTO links(id,cid,url,urlhash) VALUES(?,?,?,?)`, linkID, cid, url, md5hstr)
 			if err != nil {
 				rows, _ := conn.Query(`SELECT id FROM links WHERE cid=? AND urlhash=?`, cid, md5hstr)
-				for rows.Next() {
-					rows.Scan(&linkID)
+				if rows != nil {
+					defer rows.Close()
+					for rows.Next() {
+						rows.Scan(&linkID)
+					}
 				}
 			}
 			lock.Lock()

@@ -97,7 +97,9 @@ var sendCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal("[cmd][send][Query] ", err)
 		}
-		defer rows.Close()
+		if rows != nil {
+			defer rows.Close()
+		}
 
 		mails.ProcessSend(body, body_text, rows, *sendCID, *sendReplaceLink, *sendSubject, *sendDryRun, *sendLimit)
 	},
