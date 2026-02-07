@@ -70,6 +70,7 @@ func washi(v url.Values, url string) []byte {
 	if len(washigroup) > 1 {
 		userrows, err := utils.GetConn().Query(`SELECT f_name, l_name FROM user WHERE id=?`, v.Get("u"))
 		if err == nil {
+			defer userrows.Close()
 			washiURL := []byte(washigroup[1])
 			for userrows.Next() {
 				var (
@@ -121,15 +122,22 @@ func door(w http.ResponseWriter, r *http.Request) {
 		if ok {
 			log.Println("Using", match[1], "cache", serverlinksCacheKey, url)
 		} else {
-			rows, err := utils.GetConn().Query(`SELECT url FROM links WHERE cid=? AND id=?`, v.Get("c"), v.Get("l"))
-			if err == nil {
-				for rows.Next() {
-					rows.Scan(&url)
-					serverlinksCacheMu.Lock()
-					serverlinksCache[serverlinksCacheKey] = url
-					serverlinksCacheMu.Unlock()
-					log.Println("Find", match[1], serverlinksCacheKey, url)
+			serverlinksCacheMu.Lock()
+			url, ok = serverlinksCache[serverlinksCacheKey]
+			if ok {
+				serverlinksCacheMu.Unlock()
+				log.Println("Using", match[1], "cache", serverlinksCacheKey, url)
+			} else {
+				rows, err := utils.GetConn().Query(`SELECT url FROM links WHERE cid=? AND id=?`, v.Get("c"), v.Get("l"))
+				if err == nil {
+					for rows.Next() {
+						rows.Scan(&url)
+						serverlinksCache[serverlinksCacheKey] = url
+						log.Println("Find", match[1], serverlinksCacheKey, url)
+					}
+					rows.Close()
 				}
+				serverlinksCacheMu.Unlock()
 			}
 		}
 
