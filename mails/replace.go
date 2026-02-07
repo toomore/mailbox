@@ -122,6 +122,5 @@ func filteratags(rg *regexp.Regexp, body *[]byte, cid string) map[string]LinksDa
 		}(v[1])
 	}
 	wg.Wait()
-	conn.Close()
 	return result
 }

@@ -8,11 +8,17 @@ import (
 	"log"
 	"regexp"
 	"strings"
+	"sync"
 )
 
 const (
 	// SQLPATH is for SQL link path
 	SQLPATH = "root:mailboxdbs@tcp(MARIADB:3306)/mailbox?parseTime=true"
+)
+
+var (
+	dbOnce     sync.Once
+	dbInstance *sql.DB
 )
 
 // GenSeed is to gen seed
@@ -31,17 +37,19 @@ func GenHmac(key, message []byte) []byte {
 
 // GetConn DB conn
 func GetConn() *sql.DB {
-	var err error
-	var conn *sql.DB
-	if conn, err = sql.Open("mysql", SQLPATH); err != nil {
-		log.Fatal("[GetConn] ", err)
-	}
-	conn.SetMaxOpenConns(1024)
-	if err := conn.Ping(); err != nil {
-		log.Fatal("[GetConn][Ping] ", err)
-	}
-
-	return conn
+	dbOnce.Do(func() {
+		var err error
+		dbInstance, err = sql.Open("mysql", SQLPATH)
+		if err != nil {
+			log.Fatal("[GetConn] ", err)
+		}
+		dbInstance.SetMaxOpenConns(50)
+		dbInstance.SetMaxIdleConns(10)
+		if err := dbInstance.Ping(); err != nil {
+			log.Fatal("[GetConn][Ping] ", err)
+		}
+	})
+	return dbInstance
 }
 
 // FormatEmail is to make mail address unique
@@ -50,6 +58,9 @@ func FormatEmail(email string) string {
 	email = re.ReplaceAllString(strings.TrimSpace(strings.ToLower(email)), "")
 
 	parts := strings.Split(email, "@")
+	if len(parts) != 2 {
+		return strings.TrimSpace(strings.ToLower(email))
+	}
 	localPart, domain := parts[0], parts[1]
 
 	localPart = strings.ReplaceAll(localPart, ".", "")

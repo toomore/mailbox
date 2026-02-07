@@ -47,6 +47,14 @@ func TestFormatEmail(t *testing.T) {
 	}
 }
 
+func TestFormatEmailInvalid(t *testing.T) {
+	// Email without @ should not panic, returns trimmed/lowercased input
+	got := FormatEmail("noatsign")
+	if got != "noatsign" {
+		t.Fatalf("expected \"noatsign\", got %q", got)
+	}
+}
+
 func BenchmarkFormatEmail(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		FormatEmail("toomore.chiang+123@gmail.com")

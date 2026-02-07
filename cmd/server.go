@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"sync"
 
 	"github.com/spf13/cobra"
 	"github.com/toomore/mailbox/campaign"
@@ -36,9 +37,10 @@ import (
 )
 
 var (
-	servercExpr      = regexp.MustCompile(`/(read|door|washi|vote)/([0-9a-zA-Z]+)`)
-	serverhttpPort   *string
-	serverlinksCache = make(map[string]string)
+	servercExpr        = regexp.MustCompile(`/(read|door|washi|vote)/([0-9a-zA-Z]+)`)
+	serverhttpPort     *string
+	serverlinksCache   = make(map[string]string)
+	serverlinksCacheMu sync.RWMutex
 )
 
 func serverLog(note string, r *http.Request) {
@@ -112,14 +114,20 @@ func door(w http.ResponseWriter, r *http.Request) {
 			url                 string
 		)
 
-		if url, ok = serverlinksCache[serverlinksCacheKey]; ok {
+		serverlinksCacheMu.RLock()
+		url, ok = serverlinksCache[serverlinksCacheKey]
+		serverlinksCacheMu.RUnlock()
+
+		if ok {
 			log.Println("Using", match[1], "cache", serverlinksCacheKey, url)
 		} else {
 			rows, err := utils.GetConn().Query(`SELECT url FROM links WHERE cid=? AND id=?`, v.Get("c"), v.Get("l"))
 			if err == nil {
 				for rows.Next() {
 					rows.Scan(&url)
+					serverlinksCacheMu.Lock()
 					serverlinksCache[serverlinksCacheKey] = url
+					serverlinksCacheMu.Unlock()
 					log.Println("Find", match[1], serverlinksCacheKey, url)
 				}
 			}

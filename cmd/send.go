@@ -22,10 +22,10 @@ package cmd
 
 import (
 	"database/sql"
-	"fmt"
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -79,17 +79,25 @@ var sendCmd = &cobra.Command{
 		var rows *sql.Rows
 		if *sendUID != "" {
 			uids := strings.Split(*sendUID, ",")
+			placeholders := make([]string, len(uids))
+			args := make([]interface{}, len(uids))
 			for i, v := range uids {
-				uids[i] = fmt.Sprintf("'%s'", v)
+				uid := strings.TrimSpace(v)
+				if _, err := strconv.Atoi(uid); err != nil {
+					log.Fatal("[cmd][send] invalid uid: ", v)
+				}
+				placeholders[i] = "?"
+				args[i] = uid
 			}
-			rows, err = sendConn.Query(fmt.Sprintf(`SELECT id,email,f_name,l_name FROM user WHERE alive=1 AND id IN (%s)`, strings.Join(uids, ",")))
+			query := `SELECT id,email,f_name,l_name FROM user WHERE alive=1 AND id IN (` + strings.Join(placeholders, ",") + `)`
+			rows, err = sendConn.Query(query, args...)
 		} else {
 			rows, err = sendConn.Query(`SELECT id,email,f_name,l_name FROM user WHERE alive=1 AND groups=?`, *sendGroups)
 		}
-		defer rows.Close()
 		if err != nil {
 			log.Fatal("[cmd][send][Query] ", err)
 		}
+		defer rows.Close()
 
 		mails.ProcessSend(body, body_text, rows, *sendCID, *sendReplaceLink, *sendSubject, *sendDryRun, *sendLimit)
 	},
