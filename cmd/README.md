@@ -14,6 +14,8 @@ CMD
 
 ### `mailbox user`
 匯入訂閱者的資訊。
+- `mailbox user unsubscribe --email ... [--group ...]` 可手動標記退訂（alive=0）。
+- `mailbox user unsubscribed [group]` 可查詢指定群組已退訂名單。
 
 ### `mailbox send`
 發送電子報，以 **HTML** 格式發送。

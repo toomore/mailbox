@@ -59,6 +59,8 @@ sh ./dev-run-mariadb-client.sh # MariaDB 客戶端
 | `mailbox_ses_sender` | 發件者信箱，格式：`Name <email@example.com>` |
 | `mailbox_web_site` | 追蹤連結網域（不含 https 與結尾斜線），如：`open.example.com` |
 | `mailbox_ses_replyto` | （選用）回信信箱 |
+| `mailbox_unsubscribe_mailto` | （選用）List-Unsubscribe 的 mailto 信箱，未設定時 fallback `mailbox_ses_replyto` |
+| `mailbox_unsubscribe_one_click` | （選用）`true`/`1` 時加上 `List-Unsubscribe-Post: List-Unsubscribe=One-Click` |
 | `MAILBOX_DB_DSN` | （選用）資料庫連線字串，覆寫預設 DSN |
 
 ---
@@ -86,6 +88,8 @@ mailbox user import ./list.csv     # 匯入訂閱者（CSV 需含 email, groups,
 mailbox user import ./list.csv -d  # 預覽模式（dry run）
 mailbox user update ./list.csv    # 更新訂閱者（需含 alive 欄位）
 mailbox user show [group]         # 顯示群組使用者
+mailbox user unsubscribe --email user@example.com --group weekly --reason "gmail unsub"
+mailbox user unsubscribed [group] # 顯示群組已退訂（alive=0）名單
 ```
 
 ### Send
@@ -100,6 +104,21 @@ mailbox send -p [html] -t [text] -s "Subject" --uid="6,12" --cid [cid]
 # 預覽模式
 mailbox send -p [html] -t [text] -s "Subject" -g [group] --cid [cid] -d
 ```
+
+### Unsubscribe（Phase 1: manual）
+
+```bash
+# 建議：設定退訂信箱（此信箱接收郵件客戶端退訂通知）
+export mailbox_unsubscribe_mailto="sender+unsubscribe@example.com"
+
+# 可選：提示客戶端 one-click 退訂（仍為人工處理流程）
+export mailbox_unsubscribe_one_click="true"
+```
+
+- 發信時會自動加上 `List-Unsubscribe` header（mailto）。
+- 收到退訂通知後，使用 `mailbox user unsubscribe` 或 `mailbox user update`（`alive=0`）手動標記。
+- 批次處理可準備含 `email,groups,f_name,l_name,alive` 欄位的 CSV，透過 `mailbox user update ./list.csv` 一次更新。
+- `send` 僅會寄給 `alive=1` 使用者，已退訂名單會自動排除。
 
 ### Server
 

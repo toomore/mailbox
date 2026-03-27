@@ -2,6 +2,8 @@ package mails
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/toomore/mailbox/campaign"
@@ -10,6 +12,49 @@ import (
 
 func TestGenParams(t *testing.T) {
 	t.Logf("%+v", GenParams("toomore0929@gmail.com", "message", "[Test]", "text message"))
+}
+
+func TestBuildListUnsubscribeHeaders(t *testing.T) {
+	t.Setenv("mailbox_unsubscribe_mailto", "sender+unsubscribe@example.com")
+	t.Setenv("mailbox_unsubscribe_one_click", "true")
+	headers := buildListUnsubscribeHeaders()
+	if len(headers) != 2 {
+		t.Fatalf("unexpected header count: %d", len(headers))
+	}
+	if headers[0] != "List-Unsubscribe: <mailto:sender+unsubscribe@example.com?subject=unsubscribe>" {
+		t.Fatalf("unexpected List-Unsubscribe header: %s", headers[0])
+	}
+	if headers[1] != "List-Unsubscribe-Post: List-Unsubscribe=One-Click" {
+		t.Fatalf("unexpected List-Unsubscribe-Post header: %s", headers[1])
+	}
+}
+
+func TestBuildRawEmailContainsHeaders(t *testing.T) {
+	t.Setenv("mailbox_ses_sender", "Sender <sender@example.com>")
+	t.Setenv("mailbox_ses_replyto", "sender+reply@example.com")
+	t.Setenv("mailbox_unsubscribe_mailto", "sender+unsubscribe@example.com")
+	t.Setenv("mailbox_unsubscribe_one_click", "1")
+	params := GenParams("User <user@example.com>", "<b>Hello</b>", "測試 Subject", "Hello")
+	raw := string(buildRawEmail(params))
+	for _, expected := range []string{
+		"Reply-To: sender+reply@example.com",
+		"List-Unsubscribe: <mailto:sender+unsubscribe@example.com?subject=unsubscribe>",
+		"List-Unsubscribe-Post: List-Unsubscribe=One-Click",
+		"Content-Type: multipart/alternative",
+	} {
+		if !strings.Contains(raw, expected) {
+			t.Fatalf("raw email missing %q", expected)
+		}
+	}
+}
+
+func TestGetUnsubscribeMailtoFallbackReplyTo(t *testing.T) {
+	os.Unsetenv("mailbox_unsubscribe_mailto")
+	t.Setenv("mailbox_ses_replyto", "sender+unsubscribe@example.com")
+	got := getUnsubscribeMailto()
+	if got != "sender+unsubscribe@example.com" {
+		t.Fatalf("unexpected fallback value: %s", got)
+	}
 }
 
 func TestProcessSend(t *testing.T) {

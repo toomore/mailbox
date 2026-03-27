@@ -38,6 +38,9 @@ import (
 var (
 	userDryRun *bool
 	userConn   *sql.DB
+	userEmails *[]string
+	userGroup  *string
+	userReason *string
 )
 
 type user struct {
@@ -146,9 +149,13 @@ func updateUser(data []user) {
 }
 
 func readUser(group string) {
-	rows, err := userConn.Query(`SELECT id,email,email_uni,f_name,l_name,alive,created FROM user WHERE alive=1 AND groups=?`, group)
+	readUserWithAlive(group, 1)
+}
+
+func readUserWithAlive(group string, alive int) int {
+	rows, err := userConn.Query(`SELECT id,email,email_uni,f_name,l_name,alive,created FROM user WHERE alive=? AND groups=?`, alive, group)
 	if err != nil {
-		log.Fatal("[cmd][readUser][Query]", err)
+		log.Fatal("[cmd][readUserWithAlive][Query]", err)
 	}
 	defer rows.Close()
 	var (
@@ -158,19 +165,69 @@ func readUser(group string) {
 		fname     string
 		lname     string
 		created   time.Time
-		alive     int
+		userAlive int
 	)
+	count := 0
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
 	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "id", "email", "email_uni", "fname", "lname", "alive", "created")
 	for rows.Next() {
-		if err := rows.Scan(&id, &email, &email_uni, &fname, &lname, &alive, &created); err != nil {
+		if err := rows.Scan(&id, &email, &email_uni, &fname, &lname, &userAlive, &created); err != nil {
 			log.Println(err)
 		} else {
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%d\t%s\n", id, email, email_uni, fname, lname, alive, created)
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%d\t%s\n", id, email, email_uni, fname, lname, userAlive, created)
+			count++
 		}
 	}
 	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "id", "email", "email_uni", "fname", "lname", "alive", "created")
 	w.Flush()
+	return count
+}
+
+func formattedEmails(values []string) []string {
+	seen := map[string]struct{}{}
+	results := []string{}
+	for _, item := range values {
+		for _, p := range strings.Split(item, ",") {
+			v := utils.FormatEmail(strings.TrimSpace(p))
+			if v == "" {
+				continue
+			}
+			if _, ok := seen[v]; ok {
+				continue
+			}
+			seen[v] = struct{}{}
+			results = append(results, v)
+		}
+	}
+	return results
+}
+
+func buildUnsubscribeUpdateQuery(emails []string, group string) (string, []interface{}) {
+	placeholders := make([]string, len(emails))
+	args := make([]interface{}, 0, len(emails)+1)
+	for i, v := range emails {
+		placeholders[i] = "?"
+		args = append(args, v)
+	}
+	query := `UPDATE user SET alive=0 WHERE email_uni IN (` + strings.Join(placeholders, ",") + `)`
+	if group != "" {
+		query += ` AND groups=?`
+		args = append(args, group)
+	}
+	return query, args
+}
+
+func unsubscribeUsers(emails []string, group string) {
+	if len(emails) == 0 {
+		log.Fatal("[cmd][unsubscribeUsers] please provide --email")
+	}
+	query, args := buildUnsubscribeUpdateQuery(emails, group)
+	result, err := userConn.Exec(query, args...)
+	if err != nil {
+		log.Fatal("[cmd][unsubscribeUsers][Exec]", err)
+	}
+	rowAff, _ := result.RowsAffected()
+	log.Printf("[UNSUBSCRIBE] RowsAffected %d emails=%v group=%q reason=%q", rowAff, emails, group, *userReason)
 }
 
 var userCmd = &cobra.Command{
@@ -247,9 +304,44 @@ var showCmd = &cobra.Command{
 	},
 }
 
+var unsubscribeCmd = &cobra.Command{
+	Use:   "unsubscribe",
+	Short: "Mark users as unsubscribed",
+	Long:  "手動標記退訂（alive=0），支援 email 與 group 條件。",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		userConn = utils.GetConn()
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		unsubscribeUsers(formattedEmails(*userEmails), *userGroup)
+	},
+}
+
+var unsubscribedCmd = &cobra.Command{
+	Use:   "unsubscribed [groups ...]",
+	Short: "Show unsubscribed users",
+	Long:  "顯示指定群組的退訂名單（alive=0）。",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		userConn = utils.GetConn()
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			cmd.Help()
+			return
+		}
+		for _, g := range args {
+			fmt.Printf("----- %s (alive=0) -----\n", g)
+			count := readUserWithAlive(g, 0)
+			fmt.Printf("total unsubscribed: %d\n", count)
+		}
+	},
+}
+
 func init() {
 	userDryRun = userCmd.PersistentFlags().BoolP("dryRun", "d", false, "Dry run read csv data")
+	userEmails = unsubscribeCmd.Flags().StringSlice("email", []string{}, "unsubscribe target email, supports repeated/comma-separated values")
+	userGroup = unsubscribeCmd.Flags().String("group", "", "group filter")
+	userReason = unsubscribeCmd.Flags().String("reason", "", "manual unsubscribe reason (for logging)")
 
 	RootCmd.AddCommand(userCmd)
-	userCmd.AddCommand(importCmd, showCmd, updateCmd)
+	userCmd.AddCommand(importCmd, showCmd, updateCmd, unsubscribeCmd, unsubscribedCmd)
 }

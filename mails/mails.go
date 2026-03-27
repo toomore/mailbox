@@ -4,7 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"mime"
+	"net/mail"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -66,10 +69,94 @@ func GenParams(to string, message string, subject string, text string) *ses.Send
 	return params
 }
 
+func getUnsubscribeMailto() string {
+	if v := strings.TrimSpace(os.Getenv("mailbox_unsubscribe_mailto")); v != "" {
+		return v
+	}
+	return strings.TrimSpace(os.Getenv("mailbox_ses_replyto"))
+}
+
+func buildListUnsubscribeHeaders() []string {
+	mailto := getUnsubscribeMailto()
+	if mailto == "" {
+		return nil
+	}
+	headers := []string{
+		fmt.Sprintf("List-Unsubscribe: <mailto:%s?subject=unsubscribe>", mailto),
+	}
+	if strings.EqualFold(strings.TrimSpace(os.Getenv("mailbox_unsubscribe_one_click")), "true") ||
+		strings.TrimSpace(os.Getenv("mailbox_unsubscribe_one_click")) == "1" {
+		headers = append(headers, "List-Unsubscribe-Post: List-Unsubscribe=One-Click")
+	}
+	return headers
+}
+
+func encodeSubject(subject string) string {
+	if subject == "" {
+		return ""
+	}
+	return mime.BEncoding.Encode("UTF-8", subject)
+}
+
+func buildRawEmail(params *ses.SendEmailInput) []byte {
+	var (
+		to      = strings.TrimSpace(aws.StringValue(params.Destination.ToAddresses[0]))
+		from    = strings.TrimSpace(aws.StringValue(params.Source))
+		subject = aws.StringValue(params.Message.Subject.Data)
+		html    = aws.StringValue(params.Message.Body.Html.Data)
+		text    = aws.StringValue(params.Message.Body.Text.Data)
+	)
+	boundary := "mailbox_alt_boundary"
+	headers := []string{
+		fmt.Sprintf("From: %s", from),
+		fmt.Sprintf("To: %s", to),
+		fmt.Sprintf("Subject: %s", encodeSubject(subject)),
+		"MIME-Version: 1.0",
+		fmt.Sprintf("Content-Type: multipart/alternative; boundary=%q", boundary),
+	}
+	if len(params.ReplyToAddresses) > 0 {
+		reply := strings.TrimSpace(aws.StringValue(params.ReplyToAddresses[0]))
+		if reply != "" {
+			headers = append(headers, fmt.Sprintf("Reply-To: %s", reply))
+		}
+	}
+	headers = append(headers, buildListUnsubscribeHeaders()...)
+
+	var msg strings.Builder
+	msg.WriteString(strings.Join(headers, "\r\n"))
+	msg.WriteString("\r\n\r\n")
+	msg.WriteString(fmt.Sprintf("--%s\r\n", boundary))
+	msg.WriteString("Content-Type: text/plain; charset=UTF-8\r\n")
+	msg.WriteString("Content-Transfer-Encoding: 8bit\r\n\r\n")
+	msg.WriteString(text)
+	msg.WriteString("\r\n")
+	msg.WriteString(fmt.Sprintf("--%s\r\n", boundary))
+	msg.WriteString("Content-Type: text/html; charset=UTF-8\r\n")
+	msg.WriteString("Content-Transfer-Encoding: 8bit\r\n\r\n")
+	msg.WriteString(html)
+	msg.WriteString("\r\n")
+	msg.WriteString(fmt.Sprintf("--%s--\r\n", boundary))
+	return []byte(msg.String())
+}
+
 // Send is to send mail
 func Send(params *ses.SendEmailInput) {
+	// Validate common address formats before passing to SES raw API.
+	to := strings.TrimSpace(aws.StringValue(params.Destination.ToAddresses[0]))
+	from := strings.TrimSpace(aws.StringValue(params.Source))
+	if _, err := mail.ParseAddress(to); err != nil {
+		log.Println(to, err)
+		return
+	}
+	if _, err := mail.ParseAddress(from); err != nil {
+		log.Println(from, err)
+		return
+	}
+	raw := buildRawEmail(params)
 	for i := 0; i < 5; i++ {
-		resp, err := svc.SendEmail(params)
+		resp, err := svc.SendRawEmail(&ses.SendRawEmailInput{
+			RawMessage: &ses.RawMessage{Data: raw},
+		})
 		if err == nil {
 			log.Println(*params.Destination.ToAddresses[0], resp)
 			return
