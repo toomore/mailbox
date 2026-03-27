@@ -7,17 +7,17 @@
 
 ## 專案概述 / Overview
 
-**中文：** Mailbox 是一個簡易電子報發送系統，使用 Golang 實作。主要功能包括：建立發送 campaign 資訊、匯入訂閱者資訊（群組標記）、發送 HTML 格式電子報、開信追蹤與連結點擊追蹤。系統設計為在 Docker 容器中運行。
+**中文：** Mailbox 是一個簡易電子報發送系統，使用 Golang 實作。主要功能包括：建立發送 campaign 資訊、匯入訂閱者資訊（群組標記）、發送 HTML 格式電子報、開信追蹤、連結點擊追蹤與退訂處理。系統設計為在 Docker 容器中運行。
 
-**English:** Mailbox is a simple newsletter sending system built with Go. It supports campaign management, subscriber import (with group tags), HTML email sending, open tracking, and link click tracking. Designed to run in Docker containers.
+**English:** Mailbox is a simple newsletter sending system built with Go. It supports campaign management, subscriber import (with group tags), HTML email sending, open tracking, link click tracking, and unsubscribe handling. Designed to run in Docker containers.
 
 ---
 
 ## 快速開始 / Quick Start
 
-**中文：** 執行前需準備 AWS SES、MariaDB、Nginx。基本流程：建立 campaign → 匯入訂閱者 → 設定環境變數 → 發送電子報 → 啟動追蹤 server。
+**中文：** 執行前需準備 AWS SES、MariaDB、Nginx。基本流程：建立 campaign → 匯入訂閱者 → 設定環境變數 → 發送電子報 → 啟動追蹤 server → 處理退訂通知。
 
-**English:** Requirements: AWS SES, MariaDB, Nginx. Basic flow: create campaign → import subscribers → set env vars → send newsletter → run tracking server.
+**English:** Requirements: AWS SES, MariaDB, Nginx. Basic flow: create campaign → import subscribers → set env vars → send newsletter → run tracking server → handle unsubscribe notifications.
 
 ---
 
@@ -88,8 +88,10 @@ mailbox user import ./list.csv     # 匯入訂閱者（CSV 需含 email, groups,
 mailbox user import ./list.csv -d  # 預覽模式（dry run）
 mailbox user update ./list.csv    # 更新訂閱者（需含 alive 欄位）
 mailbox user show [group]         # 顯示群組使用者
-mailbox user unsubscribe --email user@example.com --group weekly --reason "gmail unsub"
-mailbox user unsubscribed [group] # 顯示群組已退訂（alive=0）名單
+mailbox user unsubscribe --email user@example.com              # 標記退訂（所有群組）
+mailbox user unsubscribe --email user@example.com --group weekly  # 標記退訂（指定群組）
+mailbox user unsubscribe --email "a@x.com,b@x.com" --reason "unsub via gmail"  # 多筆 + 原因
+mailbox user unsubscribed [group] # 顯示群組已退訂（alive=0）名單與數量
 ```
 
 ### Send
@@ -105,20 +107,64 @@ mailbox send -p [html] -t [text] -s "Subject" --uid="6,12" --cid [cid]
 mailbox send -p [html] -t [text] -s "Subject" -g [group] --cid [cid] -d
 ```
 
-### Unsubscribe（Phase 1: manual）
+### Unsubscribe（Phase 1: manual / 手動退訂流程）
+
+**中文：**
+
+目前採用 `List-Unsubscribe` 郵件標頭，讓 Gmail、Apple Mail 等客戶端顯示內建退訂按鈕。收到退訂通知後由人工標記，後續寄送自動排除。
+
+**English:**
+
+Currently uses the `List-Unsubscribe` mail header so that Gmail, Apple Mail, and other clients display a built-in unsubscribe button. After receiving unsubscribe notifications, recipients are manually marked and automatically excluded from future sends.
+
+#### 設定 / Setup
 
 ```bash
-# 建議：設定退訂信箱（此信箱接收郵件客戶端退訂通知）
+# 設定退訂信箱（接收郵件客戶端的退訂通知）
+# Set the unsubscribe mailbox (receives unsubscribe notifications from mail clients)
 export mailbox_unsubscribe_mailto="sender+unsubscribe@example.com"
 
-# 可選：提示客戶端 one-click 退訂（仍為人工處理流程）
+# 可選：加上 one-click 退訂標頭（仍為人工處理，但提升客戶端顯示退訂按鈕的機率）
+# Optional: add one-click unsubscribe header (still manual processing, improves client UI)
 export mailbox_unsubscribe_one_click="true"
 ```
 
-- 發信時會自動加上 `List-Unsubscribe` header（mailto）。
-- 收到退訂通知後，使用 `mailbox user unsubscribe` 或 `mailbox user update`（`alive=0`）手動標記。
-- 批次處理可準備含 `email,groups,f_name,l_name,alive` 欄位的 CSV，透過 `mailbox user update ./list.csv` 一次更新。
-- `send` 僅會寄給 `alive=1` 使用者，已退訂名單會自動排除。
+若未設定 `mailbox_unsubscribe_mailto`，會 fallback 使用 `mailbox_ses_replyto`；兩者都未設定時不加標頭。
+
+If `mailbox_unsubscribe_mailto` is not set, falls back to `mailbox_ses_replyto`; if neither is set, no header is added.
+
+#### 操作流程 / Workflow
+
+```
+1. 發信 → 郵件自動帶 List-Unsubscribe header
+   Send  → emails include List-Unsubscribe header automatically
+
+2. 收件者透過客戶端退訂 → 退訂通知寄到 mailbox_unsubscribe_mailto
+   Recipient unsubscribes via client → notification sent to mailbox_unsubscribe_mailto
+
+3. 人工檢視退訂通知信箱，取得退訂者 email
+   Manually review the unsubscribe mailbox, collect unsubscribed emails
+
+4. 標記退訂（擇一）/ Mark as unsubscribed (pick one):
+   a. 單筆/多筆即時標記：
+      mailbox user unsubscribe --email user@example.com
+   b. 批次 CSV 更新（alive=0）：
+      mailbox user update ./unsubscribe_list.csv
+
+5. 驗證退訂結果 / Verify:
+   mailbox user unsubscribed [group]
+
+6. 後續 send 自動排除 alive=0 的使用者
+   Future sends automatically exclude users with alive=0
+```
+
+#### Flags 說明 / Flag Reference
+
+| Flag | 說明 Description |
+|------|------------------|
+| `--email` | 退訂目標 email，支援逗號分隔或重複傳入（會自動 normalize 與去重）。Target email(s), supports comma-separated or repeated values (auto-normalized and deduplicated). |
+| `--group` | （選用）限定群組，未帶則套用該 email 的所有群組。Optional group filter; if omitted, applies to all groups. |
+| `--reason` | （選用）退訂原因，記錄於 log 輸出，不寫入 DB。Optional reason, logged but not stored in DB. |
 
 ### Server
 
